@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lindu - Friend Location Tracker
+
+Lindu is a Progressive Web App (PWA) that enables users to track the cities where their friends live, offering a simple, privacy-focused way to stay informed about friends' locations without sharing exact coordinates.
+
+## Features
+
+- **Phone Number Authentication**: Secure sign-up and login using phone number verification via SMS
+- **User Profiles**: Simple profiles with just name, profile picture, and city
+- **Friend System**: Add friends by phone number, with SMS invitations for non-users
+- **Map View**: Interactive map showing friends' locations at the city level
+- **Progressive Web App**: Install on your device for a native-like experience
+
+## Tech Stack
+
+- **Frontend**: React, TypeScript, Next.js, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL via Supabase
+- **Storage**: Supabase Storage for profile pictures
+- **Authentication**: Phone number verification via Twilio
+- **Maps**: Google Maps API
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ and npm
+- Supabase account
+- Twilio account
+- Google Maps API key
+
+### Environment Setup
+
+1. Clone the repository
+2. Copy `.env.local.example` to `.env.local`
+3. Fill in the environment variables:
+   - Supabase URL and anon key
+   - Twilio credentials
+   - Google Maps API key
+
+### Database Setup
+
+Create the following tables in your Supabase project:
+
+1. **users**
+   - id (uuid, primary key)
+   - phone (text, unique)
+   - name (text, nullable)
+   - profile_picture_url (text, nullable)
+   - city (uuid, foreign key to cities.id, nullable)
+   - created_at (timestamp with timezone)
+
+2. **cities**
+   - id (uuid, primary key)
+   - name (text)
+   - country (text)
+   - lat (float)
+   - lng (float)
+   - created_at (timestamp with timezone)
+
+3. **friends**
+   - id (uuid, primary key)
+   - user_id (uuid, foreign key to users.id)
+   - friend_id (uuid, foreign key to users.id)
+   - status (text, enum: 'pending', 'accepted')
+   - created_at (timestamp with timezone)
+
+Also, create a storage bucket named `profile-pictures` with public read access.
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+This app can be deployed to any platform that supports Next.js applications, such as Vercel, Netlify, or a custom server.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## License
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
