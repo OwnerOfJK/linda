@@ -1,5 +1,4 @@
 import { Text, View } from 'react-native';
-
 import { EditScreenInfo } from './EditScreenInfo';
 
 type ScreenContentProps = {
@@ -8,7 +7,8 @@ type ScreenContentProps = {
   children?: React.ReactNode;
 };
 
-export const ScreenContent = ({ title, path, children }: ScreenContentProps) => {
+export const ScreenContent = (screenContentProps: ScreenContentProps) : JSX.Element => {
+  const { title, path, children } = screenContentProps;
   return (
     <View className={styles.container}>
       <Text className={styles.title}>{title}</Text>
@@ -18,6 +18,7 @@ export const ScreenContent = ({ title, path, children }: ScreenContentProps) => 
     </View>
   );
 };
+
 const styles = {
   container: `items-center flex-1 justify-center`,
   separator: `h-[1px] my-7 w-4/5 bg-gray-200`,
