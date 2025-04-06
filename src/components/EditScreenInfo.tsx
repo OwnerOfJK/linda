@@ -1,9 +1,8 @@
 import { Text, View } from 'react-native';
 
-export const EditScreenInfo = ({path} : {path: string}) : JSX.Element => {
+export const EditScreenInfo = ({ path }: { path: string }): JSX.Element => {
   const title = 'Open up the code for this screen:';
-  const description =
-    'First few changes.';
+  const description = 'First few changes.';
 
   return (
     <View>

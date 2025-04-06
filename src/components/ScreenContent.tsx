@@ -7,7 +7,7 @@ type ScreenContentProps = {
   children?: React.ReactNode;
 };
 
-export const ScreenContent = (screenContentProps: ScreenContentProps) : JSX.Element => {
+export const ScreenContent = (screenContentProps: ScreenContentProps): JSX.Element => {
   const { title, path, children } = screenContentProps;
   return (
     <View className={styles.container}>
