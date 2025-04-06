@@ -11,6 +11,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@sentry/react-native": "^6.10.0",
     "expo": "^52.0.44",
     "expo-status-bar": "~2.0.1",
     "nativewind": "latest",

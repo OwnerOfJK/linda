@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Text, View, Button } from 'react-native';
+import * as Sentry from "@sentry/react-native";
 
 export const EditScreenInfo = ({ path }: { path: string }): JSX.Element => {
   const title = 'Open up the code for this screen:';
@@ -8,6 +9,7 @@ export const EditScreenInfo = ({ path }: { path: string }): JSX.Element => {
     <View>
       <View className={styles.getStartedContainer}>
         <Text className={styles.getStartedText}>{title}</Text>
+        <Button title='Try!' onPress={ () => { Sentry.captureException(new Error('First error')) }}/>
         <View className={styles.codeHighlightContainer + styles.homeScreenFilename}>
           <Text>{path}</Text>
         </View>
