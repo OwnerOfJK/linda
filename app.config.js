@@ -26,7 +26,17 @@ const getUniqueIdentifier = () => {
   };
   
 
-export default ({ config }) => ({
+  export default ({ config }) => ({
     ...config,
+    name: getAppName(),
+    ios: {
+      ...config.ios,
+      bundleIdentifier: getUniqueIdentifier(),
+    },
+    android: {
+      ...config.android,
+      package: getUniqueIdentifier(),
+    },
   });
+  
   
