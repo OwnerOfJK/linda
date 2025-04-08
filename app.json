@@ -8,11 +8,6 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "linda",
-    "splash": {
-      "image": "src/assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "experiments": {
       "tsconfigPaths": true
     },

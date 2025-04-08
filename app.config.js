@@ -22,7 +22,7 @@ const getAppName = () => {
     return 'Linda (Preview)';
   }
 
-  return 'Linda: Find your friends';
+  return 'Linda: Connected, Globally';
 };
 
 export default ({ config }) => ({
