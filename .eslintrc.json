@@ -1,5 +1,18 @@
 {
-  "extends": "next/core-web-vitals",
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/no-var-requires": "off",
+    "no-undef": "off"
+  },
   "overrides": [
     {
       "files": ["**/*.d.ts"],
@@ -8,5 +21,8 @@
         "@typescript-eslint/no-unsafe-function-type": "off"
       }
     }
-  ]
-} 
+  ],
+  "env": {
+    "node": true
+  }
+}
