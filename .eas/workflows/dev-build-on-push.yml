@@ -1,4 +1,8 @@
-name: Development build to iOs simulator
+name: Development build to iOs simulator on push
+
+on:
+  push:
+    branches: ['main']
 
 jobs:
   ios-simulator-build:
