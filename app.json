@@ -25,13 +25,9 @@
           "organization": "linda-0a"
         }
       ],
-      [
-        "expo-router"
-      ]
+      ["expo-router"]
     ],
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "web": {
       "favicon": "src/assets/favicon.png"
     },
