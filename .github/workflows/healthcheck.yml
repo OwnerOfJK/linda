@@ -22,5 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run healthcheck (lint, format check, tests, expo doctor)
-        run: npm run healthcheck
+      - name: Run expo doctor
+        run: npm run doctor
+
+      - name: Check for linting errors
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test -- -u
