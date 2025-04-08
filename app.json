@@ -3,8 +3,15 @@
     "name": "linda",
     "slug": "linda",
     "version": "1.0.0",
-    "web": {
-      "favicon": "src/assets/favicon.png"
+    "orientation": "portrait",
+    "icon": "src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "linda",
+    "splash": {
+      "image": "src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
     "experiments": {
       "tsconfigPaths": true
@@ -17,19 +24,17 @@
           "project": "react-native",
           "organization": "linda-0a"
         }
+      ],
+      [
+        "expo-router"
       ]
     ],
-    "orientation": "portrait",
-    "icon": "src/assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "src/assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
+    "web": {
+      "favicon": "src/assets/favicon.png"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jhk.linda",
