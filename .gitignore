@@ -41,8 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 #local builds
-./ios
-./android
+ios
+android
+.expo/prebuild
+.expo/web
 
 #Snapshot files
 src/**/*.snap
