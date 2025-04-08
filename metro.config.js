@@ -4,4 +4,4 @@ const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 // eslint-disable-next-line no-undef
 const config = getSentryExpoConfig(__dirname);
 
-module.exports = withNativeWind(config, { input: 'src/global.css' });
+module.exports = withNativeWind(config, { input: 'app/global.css' });
