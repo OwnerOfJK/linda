@@ -11,7 +11,8 @@
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{jsi,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
-    "healthcheck": "npx expo-doctor && npm run lint && npm run format"
+    "test": "jest",
+    "healthcheck": "npx expo-doctor && npm run lint && npm run format && npm run test"
   },
   "dependencies": {
     "@sentry/react-native": "~6.3.0",
@@ -22,24 +23,35 @@
     "expo-router": "~4.0.20",
     "expo-status-bar": "~2.0.1",
     "nativewind": "latest",
-    "react": "18.3.1",
+    "react": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-reanimated": "3.16.2",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.27.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.2.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~18.3.12",
+    "@types/react-test-renderer": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "babel-jest": "^29.7.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^8.57.1",
     "eslint-config-universe": "^12.0.1",
     "eslint-plugin-react": "^7.37.5",
+    "jest": "^29.7.0",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
+    "react-test-renderer": "^18.3.1",
     "tailwindcss": "^3.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
   },
   "eslintConfig": {

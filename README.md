@@ -9,3 +9,8 @@ Lindu enables users to track the cities where their friends live, offering a sim
 - Friend System: Add friends by phone number, with SMS invitations for non-users
 - Map View: Interactive map showing friends' locations at the city level
 - Progressive Web App: Install on your device for a native-like experience
+
+
+## Todos:
+- get rid of deprecated libraries such as @testing-library/jest-native
+- set up https://callstack.github.io/react-native-testing-library/docs/start/quick-start with expo sdk canary that supports react-native 0.78 that supports react 19
