@@ -44,4 +44,7 @@ next-env.d.ts
 ./ios
 ./android
 
+#Snapshot files
+src/**/*.snap
+
 .env.local
