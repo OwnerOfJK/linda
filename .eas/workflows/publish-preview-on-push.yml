@@ -1,0 +1,12 @@
+name: Create a review build upon push to main.
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish_preview_update:
+    name: Publish an udpate
+    type: update
+    params:
+      branch: main

@@ -1,0 +1,9 @@
+name: Development build to iOs simulator
+
+jobs:
+  ios-simulator-build:
+    name: IOs Simulator Build
+    type: build
+    params:
+      platform: ios
+      profile: ios-simulator
