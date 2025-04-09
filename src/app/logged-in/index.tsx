@@ -1,6 +1,6 @@
 import React from 'react';
-import LandingPage from './landing';
+import Home from './home';
 
 export default function Index() {
-  return <LandingPage />;
+  return <Home />;
 }
