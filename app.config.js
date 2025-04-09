@@ -18,7 +18,7 @@ export default ({ config }) => ({
   name: getAppName(),
   slug: 'linda',
   owner: 'jhk',
-  scheme: 'com.jhk.linda',
+  scheme: 'linda', //This is for linda://[page]
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
@@ -33,6 +33,9 @@ export default ({ config }) => ({
     adaptiveIcon: {
       foregroundImage: 'src/assets/adaptive-icon.png',
       backgroundColor: '#ffffff',
+    },
+    config: {
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     },
   },
   updates: {
@@ -55,6 +58,12 @@ export default ({ config }) => ({
       },
     ],
     ['expo-router'],
+    [
+      'expo-font',
+      {
+        fonts: ['assets/fonts/SpaceMono-Regular.ttf'],
+      },
+    ],
   ],
   assetBundlePatterns: ['**/*'],
   orientation: 'portrait',
