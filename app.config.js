@@ -18,6 +18,7 @@ export default ({ config }) => ({
   name: getAppName(),
   slug: 'linda',
   owner: 'jhk',
+  scheme: 'com.jhk.linda',
   ios: {
     ...config.ios,
     bundleIdentifier: getUniqueIdentifier(),
@@ -43,9 +44,7 @@ export default ({ config }) => ({
       projectId: '37f14e48-435e-424c-88b1-49d98296941e',
     },
   },
-  expo: {
-    userInterfaceStyle: 'automatic',
-  },
+  userInterfaceStyle: 'automatic',
   plugins: [
     [
       '@sentry/react-native/expo',
@@ -63,5 +62,6 @@ export default ({ config }) => ({
   icon: 'src/assets/icon.png',
   web: {
     favicon: 'src/assets/favicon.png',
+    bundler: 'metro',
   },
 });

@@ -1,11 +1,13 @@
-import type { Config } from 'jest';
-
-export default async (): Promise<Config> => {
-  return {
-    verbose: true,
-    clearMocks: true,
-    collectCoverage: true,
-    coverageDirectory: 'coverage',
-    preset: 'react-native',
-  };
+module.exports = {
+  preset: 'jest-expo',
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(expo-router|expo(nent)?|@expo|expo-modules-core|react-native|@react-native|react-navigation)/)',
+  ],
+  verbose: true,
+  clearMocks: true,
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
 };
