@@ -10,10 +10,6 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development"
-      },
-      "workflow": "managed",
-      "hooks": {
-        "prebuild": "npm run healthcheck"
       }
     },
     "preview": {
