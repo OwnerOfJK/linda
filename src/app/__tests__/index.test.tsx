@@ -1,8 +1,16 @@
+import { render } from '@testing-library/react-native';
 import React from 'react';
-import renderer from 'react-test-renderer';
-import Intro from '../index';
 
-test('renders correctly', () => {
-  const tree = renderer.create(<Intro />).toJSON();
-  expect(tree).toMatchSnapshot();
+import HomeScreen, { CustomText } from 'app/index';
+
+describe('<HomeScreen />', () => {
+  test('Text renders correctly on HomeScreen', () => {
+    const { getByText } = render(<HomeScreen />);
+
+    getByText('Welcome!');
+
+    const tree = render(<CustomText>Some text</CustomText>).toJSON();
+
+    expect(tree).toMatchSnapshot();
+  });
 });

@@ -1,15 +1,13 @@
-import { Text, View } from 'react-native';
 import React from 'react';
+import { PropsWithChildren } from 'react';
+import { Text, View } from 'react-native';
 
-export default function Index() {
+export const CustomText = ({ children }: PropsWithChildren) => <Text>{children}</Text>;
+
+export default function HomeScreen() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      <Text>Edit app/index.tsx to edit this screen!</Text>
+    <View className="flex-1 items-center justify-center bg-black">
+      <CustomText>Welcome!</CustomText>
     </View>
   );
 }
