@@ -61,7 +61,7 @@ export default ({ config }) => ({
     [
       'expo-font',
       {
-        fonts: ['assets/fonts/SpaceMono-Regular.ttf'],
+        fonts: ['src/assets/fonts/SpaceMono-Regular.ttf'],
       },
     ],
     ['expo-maps'],
