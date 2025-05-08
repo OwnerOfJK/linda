@@ -64,9 +64,7 @@ export default ({ config }) => ({
         fonts: ['assets/fonts/SpaceMono-Regular.ttf'],
       },
     ],
-    [
-      "expo-maps"
-    ]
+    ['expo-maps'],
   ],
   assetBundlePatterns: ['**/*'],
   orientation: 'portrait',
