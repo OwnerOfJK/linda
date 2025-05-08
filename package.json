@@ -24,6 +24,7 @@
     "expo-dev-client": "~5.0.19",
     "expo-font": "~13.0.4",
     "expo-linking": "~7.0.5",
+    "expo-maps": "^0.9.9",
     "expo-router": "~4.0.20",
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
