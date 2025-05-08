@@ -10,7 +10,8 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development"
-      }
+      },
+      "prebuildCommand": "npx expo prebuild --clean"
     },
     "preview": {
       "distribution": "internal",
