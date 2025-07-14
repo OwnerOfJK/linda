@@ -3,8 +3,8 @@ import { Text, View } from 'react-native';
 
 export default function Header() {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text>Header</Text>
+    <View className="items-center bg-blue-500 p-4">
+      <Text className="font-bold text-white">Header</Text>
     </View>
   );
 }
