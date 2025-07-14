@@ -14,3 +14,13 @@ Lindu enables users to track the cities where their friends live, offering a sim
 ## Todos:
 - get rid of deprecated libraries such as @testing-library/jest-native
 - set up https://callstack.github.io/react-native-testing-library/docs/start/quick-start with expo sdk canary that supports react-native 0.78 that supports react 19
+
+## Getting Started (Development)
+
+1. Start dev build.
+```bash
+npm run dev
+```
+2. Launch Expo Orbit for ios Simulator
+
+3. Press `i` in terminal to launch dev app on simulator.
