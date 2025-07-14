@@ -50,3 +50,4 @@ android
 src/**/*.snap
 
 .env.local
+.expo
