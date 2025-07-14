@@ -6,15 +6,15 @@ import React from 'react';
 export default function Login() {
   const router = useRouter();
   return (
-    <View className="flex-1 items-center justify-center">
-      {/* login form */}
-      <Text className="mb-5">Login Form</Text>
-      <TextInput placeholder="Email" />
-      <TextInput placeholder="Password" secureTextEntry />
+    <View className="flex-1 items-center justify-center bg-white p-4">
+      <Text className="mb-8 text-2xl font-bold">Login to Linda</Text>
+      <TextInput
+        className="mb-4 w-full rounded border border-gray-300 px-3 py-2"
+        placeholder="Phone Number"
+      />
       <Button
         title="Login"
         onPress={() => {
-          /* authenticate user */
           router.replace('/logged-in');
         }}
       />
