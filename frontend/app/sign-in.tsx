@@ -1,14 +1,17 @@
-import { Text, View, Linking, ActivityIndicator, Alert } from 'react-native';
+import { Text, View, Linking, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
 import { getUniversalLink } from '@selfxyz/core';
 import { SelfAppBuilder, type SelfApp } from '@selfxyz/qrcode';
 import { v4 as uuidv4 } from 'uuid';
 import { setStorageItemAsync, getStorageItemAsync } from '@/hooks/useStorageState';
+import { useSession } from '@/components/ctx';
+import { Button, LoadingSpinner } from '@/components/ui';
 
 export default function SignIn() {
   const [userId, setUserId] = useState<string | null>(null);
   const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
   const [universalLink, setUniversalLink] = useState<string>("");
+  const { signIn } = useSession();
 
   // Get or generate userId on mount
   useEffect(() => {
@@ -99,12 +102,7 @@ export default function SignIn() {
 
   // Show loading state while initializing
   if (!userId || !selfApp || !universalLink) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#2563eb" />
-        <Text className="mt-4 text-gray-700">Initializing Self authentication...</Text>
-      </View>
-    );
+    return <LoadingSpinner message="Initializing Self authentication..." />;
   }
 
   return (
@@ -116,11 +114,11 @@ export default function SignIn() {
         Verify your identity with Self Protocol
       </Text>
 
-      <Text
+      <Button
+        title="Sign In with Self"
         onPress={handleSelfSignIn}
-        className="bg-blue-600 text-white py-3 px-6 rounded-lg text-base font-semibold">
-        Sign In with Self
-      </Text>
+        variant="primary"
+      />
 
       <View className="mt-8 items-center">
         <Text className="text-xs text-gray-600 mb-2">User ID</Text>
@@ -128,6 +126,13 @@ export default function SignIn() {
           {userId}
         </Text>
       </View>
+
+      <Button
+        title="DevLogin"
+        onPress={signIn}
+        variant="danger"
+        className="mt-5"
+      />
     </View>
   );
 }

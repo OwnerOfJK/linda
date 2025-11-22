@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+# Linda - Private Location Sharing
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A location-sharing mobile app with privacy controls built with Expo, React Native, and Self Protocol for identity verification.
 
-## Get started
+## Quick Start
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Install Dependencies
 
 ```bash
-npm run reset-project
+npm install --legacy-peer-deps
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Configure Environment
 
-## Learn more
+Copy `.env.example` to `.env.local` and configure:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+cp .env.example .env.local
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Edit `.env.local` with your Self Protocol credentials and backend settings.
 
-## Join the community
+### 3. Start Development Server
 
-Join our community of developers creating universal apps.
+```bash
+npm start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Then choose your platform:
+- Press `a` for Android emulator
+- Press `i` for iOS simulator
+- Press `w` for web
+- Scan QR code with Expo Go app for physical device
+
+## Development Commands
+
+```bash
+npm start          # Start Expo dev server
+npm run android    # Start on Android
+npm run ios        # Start on iOS
+npm run web        # Start on web
+npm run lint       # Run ESLint
+```
+
+## Tech Stack
+
+- **Expo SDK 54** - React Native framework
+- **TypeScript** - Type safety
+- **Expo Router** - File-based navigation
+- **Tailwind CSS** (NativeWind) - Styling
+- **Self Protocol** - Identity verification
+- **Expo Location** - Location services
+
+## Project Structure
+
+```
+app/              # Expo Router screens
+components/       # Reusable components
+  ui/            # UI components (Button, LoadingSpinner)
+context/         # React Context (UserContext)
+services/        # API services (skeleton)
+types/           # TypeScript types
+utils/           # Utility functions
+```
+
+## Features
+
+- ✅ Self Protocol authentication
+- ✅ Location permission handling
+- ✅ Privacy levels (city-level or real-time)
+- 🚧 Map view (in progress)
+- 🚧 Backend integration (pending)
+
+## MVP Approach
+
+This is an MVP project. Code is kept **simple, minimal, and intuitive**:
+- No over-engineering
+- Extract components only when duplicated
+- Tailwind CSS over StyleSheet
+- Flat structures preferred
+
+See `CLAUDE.md` for detailed development guidelines.
+
+## Backend
+
+The app is designed to work with a Docker-based backend. Configure the API endpoint in `.env.local`:
+
+```bash
+EXPO_PUBLIC_API_PORT=3000
+# EXPO_PUBLIC_API_URL=https://your-backend.com  # Optional override
+```
+
+## License
+
+MIT
