@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFriends } from '@/context/FriendsContext';
 import { useUser } from '@/context/UserContext';
 import type { User, Region, PooledMarker } from '@/types';
-import { MAP_SETTINGS, MAP_STYLE } from '@/utils/mapConstants';
+import { MAP_SETTINGS, MAP_STYLE } from '@/constants/mapConstants';
 import { useRouter } from 'expo-router';
 
 const { height } = Dimensions.get('window');
