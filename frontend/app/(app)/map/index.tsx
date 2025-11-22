@@ -6,12 +6,14 @@ import { useFriends } from '@/context/FriendsContext';
 import { useUser } from '@/context/UserContext';
 import type { User, Region, PooledMarker } from '@/types';
 import { MAP_SETTINGS, MAP_STYLE } from '@/utils/mapConstants';
+import { useRouter } from 'expo-router';
 
 const { height } = Dimensions.get('window');
 
 export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
   const slideAnim = useRef(new Animated.Value(height)).current;
+  const router = useRouter();
 
   const { friends } = useFriends();
   const { userLocation } = useUser();
@@ -174,7 +176,7 @@ export default function MapScreen() {
         <Text className="text-lg font-bold text-gray-900">Linda</Text>
         <TouchableOpacity
           className="p-2"
-          onPress={() => console.log('Settings pressed - TODO: implement settings')}
+          onPress={() => router.push('/settings')}
         >
           <Ionicons name="settings-outline" size={24} color="#111827" />
         </TouchableOpacity>
