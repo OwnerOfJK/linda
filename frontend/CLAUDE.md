@@ -231,6 +231,7 @@ const value = use(AuthContext);
 - **Edge-to-Edge**: Enabled on Android
 - **Scheme**: `linda://` for deep linking
 - **Tailwind CSS**: Enabled via NativeWind
+- **Maps**: `react-native-maps` is included in Expo Go SDK 54 - DO NOT add it to `app.json` plugins
 
 ## Self Protocol Integration
 

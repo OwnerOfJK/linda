@@ -7,9 +7,10 @@ export type { SharingLevel, User, UserContextType } from './user.types';
 
 // Location types
 export type {
-  Coordinates,
   LocationData,
   LocationPermissionStatus,
   LocationUpdate,
-  FriendLocation,
 } from './location.types';
+
+// Map types
+export type { Region, PooledMarker } from './map.types';

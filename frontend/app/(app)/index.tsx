@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useUser } from '@/context/UserContext';
 import { Button, LoadingSpinner } from '@/components/ui';
 import type { SharingLevel } from '@/types';
+import { useSession } from '@/components/ctx';
 
 export default function Index() {
   const [selectedLevel, setSelectedLevel] = useState<SharingLevel | null>(null);
@@ -14,7 +15,7 @@ export default function Index() {
     city?: string;
     country?: string;
   }>({});
-
+  const { signOut } = useSession();
   const { setSharingLevel, setUserLocation } = useUser();
   const router = useRouter();
   
@@ -90,6 +91,11 @@ export default function Index() {
     );
   }
 
+  const handleClearSession = () => {
+    signOut();
+    router.replace('/sign-in');
+  };
+
   return (
     <ScrollView className="flex-1 bg-blue-50">
       <View className="p-8">
@@ -156,6 +162,12 @@ export default function Index() {
           onPress={handleContinue}
           disabled={!selectedLevel}
           variant="primary"
+          className="mt-4"
+        />
+        <Button
+          title="Clear Session & Sign Out"
+          onPress={handleClearSession}
+          variant="danger"
           className="mt-4"
         />
       </View>

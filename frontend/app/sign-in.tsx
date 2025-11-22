@@ -1,4 +1,4 @@
-import { Text, View, Linking, Alert } from 'react-native';
+import { Text, View, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
 import { getUniversalLink } from '@selfxyz/core';
 import { SelfAppBuilder, type SelfApp } from '@selfxyz/qrcode';
@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { setStorageItemAsync, getStorageItemAsync } from '@/hooks/useStorageState';
 import { useSession } from '@/components/ctx';
 import { Button, LoadingSpinner } from '@/components/ui';
+import * as Linking from 'expo-linking';
+
 
 export default function SignIn() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -37,6 +39,8 @@ export default function SignIn() {
   // Build Self app when userId is available
   useEffect(() => {
     if (!userId) return;
+    
+    const deeplinkCallback = Linking.createURL('auth-callback');
 
     try {
       // Build Self app configuration
@@ -52,7 +56,7 @@ export default function SignIn() {
         userDefinedData: "Enjoy Private Location Sharing!",
 
         // [DEEPLINK CALLBACK] Automatically redirect user to your app after verification
-        deeplinkCallback: `linda://auth-callback`,
+        deeplinkCallback: deeplinkCallback,
 
         disclosures: {
           // What you want to verify from users identity:

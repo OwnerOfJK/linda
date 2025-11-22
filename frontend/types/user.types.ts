@@ -7,12 +7,13 @@ import type { LocationData } from './location.types';
 // Sharing privacy level
 export type SharingLevel = 'city' | 'realtime';
 
-// User object
+// User object (also used for friends)
 export interface User {
   id: string;
   name?: string;
   sharingLevel: SharingLevel | null;
   location: LocationData | null;
+  lastUpdated?: Date;
 }
 
 // User context interface
