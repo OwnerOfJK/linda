@@ -42,6 +42,9 @@ npm run web        # Start on web
 npm run lint       # Run ESLint
 ```
 
+> [!CAUTION]
+> If your local WiFi blocks traffic run `npx expo start --tunnel -c`
+
 ## Tech Stack
 
 - **Expo SDK 54** - React Native framework
