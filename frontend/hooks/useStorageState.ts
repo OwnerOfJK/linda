@@ -13,6 +13,22 @@ function useAsyncState<T>(
   ) as UseStateHook<T>;
 }
 
+export async function getStorageItemAsync(key: string): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        return localStorage.getItem(key);
+      }
+      return null;
+    } catch (e) {
+      console.error('Local storage is unavailable:', e);
+      return null;
+    }
+  } else {
+    return await SecureStore.getItemAsync(key);
+  }
+}
+
 export async function setStorageItemAsync(key: string, value: string | null) {
   if (Platform.OS === 'web') {
     try {
@@ -52,7 +68,7 @@ export function useStorageState(key: string): UseStateHook<string> {
         setState(value);
       });
     }
-  }, [key]);
+  }, [key, setState]);
 
   // Set
   const setValue = useCallback(
@@ -60,7 +76,7 @@ export function useStorageState(key: string): UseStateHook<string> {
       setState(value);
       setStorageItemAsync(key, value);
     },
-    [key]
+    [key, setState]
   );
 
   return [state, setValue];

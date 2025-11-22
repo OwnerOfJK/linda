@@ -1,3 +1,8 @@
+// Import crypto polyfill first (must be before any other imports)
+import 'react-native-get-random-values';
+
+import '@/global.css';
+
 import { Stack } from 'expo-router';
 import { SessionProvider, useSession } from '@/components/ctx';
 import { useEffect } from 'react';
@@ -25,6 +30,7 @@ function RootNavigator() {
         </Stack.Protected>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+          <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
         </Stack.Protected>
       </Stack>
     );
