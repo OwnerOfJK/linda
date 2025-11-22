@@ -214,7 +214,7 @@ export default function MapScreen() {
               <View className="px-6 pb-8">
                 <Text className="text-2xl font-bold text-gray-900 mb-4">
                   {selectedFriends.length === 1
-                    ? selectedFriends[0].name
+                    ? selectedFriends[0].userName
                     : `${selectedFriends.length} friends`}
                 </Text>
 
@@ -244,7 +244,7 @@ export default function MapScreen() {
                     {selectedFriends.map((friend) => (
                       <View key={friend.id} className="mb-4 pb-4 border-b border-gray-200">
                         <Text className="text-lg font-semibold text-gray-900 mb-2">
-                          {friend.name}
+                          {friend.userName}
                         </Text>
                         <View className="flex-row items-center">
                           <Ionicons name="location-outline" size={16} color="#6B7280" />

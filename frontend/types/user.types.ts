@@ -10,7 +10,7 @@ export type SharingLevel = 'city' | 'realtime';
 // User object (also used for friends)
 export interface User {
   id: string;
-  name?: string;
+  userName?: string;
   sharingLevel: SharingLevel | null;
   location: LocationData | null;
   lastUpdated?: Date;
