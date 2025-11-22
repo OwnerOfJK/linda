@@ -23,12 +23,11 @@ contract DeployProofOfHuman is BaseScript {
     function run() public broadcast returns (ProofOfHuman proofOfHuman) {
         address hubAddress = vm.envAddress("IDENTITY_VERIFICATION_HUB_ADDRESS");
         string memory scopeSeed = vm.envString("SCOPE_SEED");
-        string[] memory forbiddenCountries = new string[](1);
-        
-        // Make sure this is the same as frontend config
-        forbiddenCountries[0] = CountryCodes.UNITED_STATES;
+        string[] memory forbiddenCountries = new string[](0);
+
+        // No restrictions for development/testing
         SelfUtils.UnformattedVerificationConfigV2 memory verificationConfig = SelfUtils.UnformattedVerificationConfigV2({
-            olderThan: 18,
+            olderThan: 0,
             forbiddenCountries: forbiddenCountries,
             ofacEnabled: false
         });
