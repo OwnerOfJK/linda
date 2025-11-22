@@ -80,6 +80,25 @@ Location and user preferences are managed via **UserContext**:
    - `'city'` - Share only city-level location
    - `'realtime'` - Share exact GPS coordinates
 
+### Friends Management
+
+Friends list is managed via **FriendsContext**:
+
+1. **FriendsProvider** (`context/FriendsContext.tsx`): Manages friends list with mock data
+2. **useFriends hook**: Access friends list and add/remove friends
+3. **Mock Data**: Currently uses hardcoded friends for MVP (4 sample friends)
+
+### Map Features
+
+The map screen (`app/(app)/map/index.tsx`) includes:
+
+- **Dynamic marker pooling**: Groups friends by city when zoomed out
+- **Real-time markers**: Shows individual markers for real-time sharers when zoomed in
+- **Privacy-aware**: Respects each friend's sharing level (city vs real-time)
+- **Friend details modal**: Tap markers to view friend information
+- **Center on location**: Button to center map on user's location
+- **Settings navigation**: Top-right settings icon navigates to `/settings`
+
 ### Backend Integration (Docker)
 
 The app is designed to work with a Docker-based backend:
@@ -110,10 +129,12 @@ app/
 ├── sign-in.tsx              # Sign-in screen (public route)
 ├── auth-callback.tsx        # Self Protocol auth callback handler
 └── (app)/                   # Protected app routes (route group)
-    ├── _layout.tsx          # App layout with UserProvider
+    ├── _layout.tsx          # App layout with UserProvider and FriendsProvider
     ├── index.tsx            # Location preference setup screen
-    └── map/
-        └── index.tsx        # Map screen (placeholder)
+    ├── map/
+    │   └── index.tsx        # Map screen with friend markers
+    └── settings/
+        └── index.tsx        # Settings screen with 3 tabs (Profile, Privacy, Friends)
 
 components/
 ├── ctx.tsx                  # SessionProvider and useSession hook
@@ -123,7 +144,8 @@ components/
     └── LoadingSpinner.tsx   # Reusable loading state
 
 context/
-└── UserContext.tsx          # User state management (location, sharing level)
+├── UserContext.tsx          # User state management (location, sharing level)
+└── FriendsContext.tsx       # Friends list management (mock data for MVP)
 
 hooks/
 └── useStorageState.ts       # Platform-agnostic persistent storage hook
@@ -131,7 +153,8 @@ hooks/
 types/                       # TypeScript type definitions
 ├── index.ts                 # Central export for all types
 ├── user.types.ts            # User, SharingLevel, UserContextType
-└── location.types.ts        # LocationData, Coordinates, FriendLocation
+├── location.types.ts        # LocationData, Coordinates, FriendLocation
+└── map.types.ts             # Map-related types (Region, PooledMarker)
 
 services/                    # Backend API communication (skeletons)
 ├── index.ts                 # Central export
@@ -139,6 +162,9 @@ services/                    # Backend API communication (skeletons)
 ├── auth.service.ts          # Authentication endpoints
 ├── user.service.ts          # User CRUD operations
 └── location.service.ts      # Location sharing endpoints
+
+constants/
+└── mapConstants.ts          # Map configuration and styling
 
 utils/
 └── getDistance.ts           # Haversine distance calculation
@@ -222,6 +248,17 @@ Always use the `use()` hook from React 19 to consume context:
 const value = use(AuthContext);
 ```
 
+### Settings Page Pattern
+
+The settings page demonstrates MVP principles:
+
+- **Single file implementation** - All 3 tabs (Profile, Privacy, Friends) in one file (`app/(app)/settings/index.tsx`)
+- **Inline tab components** - Tab components defined inline, not extracted to separate files
+- **Simple tab state** - Uses local `activeTab` state, no custom TabView component
+- **100% Tailwind CSS** - No StyleSheet usage
+- **Native components** - Alert for confirmations, Modal for add friend
+- **Existing contexts** - Leverages `useUser`, `useFriends`, `useSession` hooks
+
 ## Configuration
 
 - **New Architecture**: Enabled (`newArchEnabled: true`)
@@ -256,6 +293,9 @@ When adding new features:
 - ✅ Use template strings instead of creating a `formatLocation()` helper
 - ✅ Keep button code inline until you use buttons in 3+ places
 - ✅ Use simple `any` types instead of complex generics (for non-critical code)
+- ✅ Settings page: Single file with inline tab components (not separate files)
+- ✅ Settings page: Simple `activeTab` state instead of custom TabView component
 - ❌ Don't create a `DateUtils` class with one function
 - ❌ Don't add error boundaries until you actually need them
 - ❌ Don't create complex state machines for simple boolean flags
+- ❌ Don't extract components into separate files until used 2-3 times
