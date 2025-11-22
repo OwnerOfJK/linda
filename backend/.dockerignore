@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+*.md
+.env
+.env.local
+.DS_Store
+*.log
+backend.default.orc
+rofl.yaml
+compose.yaml
+Dockerfile
