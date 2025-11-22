@@ -1,36 +1,282 @@
-/**
- * Dev Tools Screen
- * Quick development utilities - remove in production
- */
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Animated, Dimensions, Modal, StyleSheet } from 'react-native';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import { Ionicons } from '@expo/vector-icons';
+import { useFriends } from '@/context/FriendsContext';
+import { useUser } from '@/context/UserContext';
+import type { User, Region, PooledMarker } from '@/types';
+import { MAP_SETTINGS, MAP_STYLE } from '@/utils/mapConstants';
 
-import { View, Text } from 'react-native';
-import { useSession } from '@/components/ctx';
-import { Button } from '@/components/ui';
-import { useRouter } from 'expo-router';
+const { height } = Dimensions.get('window');
 
-export default function Map() {
-  const { signOut } = useSession();
-  const router = useRouter();
+export default function MapScreen() {
+  const mapRef = useRef<MapView>(null);
+  const slideAnim = useRef(new Animated.Value(height)).current;
 
-  const handleClearSession = () => {
-    signOut();
-    router.replace('/sign-in');
+  const { friends } = useFriends();
+  const { userLocation } = useUser();
+
+  const [selectedFriends, setSelectedFriends] = useState<User[]>([]);
+  const [region, setRegion] = useState<Region>({
+    latitude: 20,
+    longitude: 0,
+    latitudeDelta: MAP_SETTINGS.INITIAL_DELTA,
+    longitudeDelta: MAP_SETTINGS.INITIAL_DELTA,
+  });
+  const [currentZoom, setCurrentZoom] = useState<number>(MAP_SETTINGS.INITIAL_DELTA);
+
+  // Center map on user's location
+  const centerOnUserLocation = useCallback(async () => {
+    if (userLocation) {
+      const newRegion = {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 10,
+        longitudeDelta: 10,
+      };
+      setRegion(newRegion);
+      setCurrentZoom(10);
+      mapRef.current?.animateToRegion(newRegion, MAP_SETTINGS.ANIMATION_DURATION);
+    }
+  }, [userLocation]);
+
+  useEffect(() => {
+    centerOnUserLocation();
+  }, [centerOnUserLocation]);
+
+  // Track zoom level changes
+  const handleRegionChange = (newRegion: Region) => {
+    setCurrentZoom(newRegion.latitudeDelta);
   };
 
+  // Pool markers by city when zoomed out
+  const poolMarkers = (): PooledMarker[] => {
+    const shouldPoolRealtime = currentZoom > MAP_SETTINGS.ZOOM_THRESHOLD;
+    const cityGroups: { [key: string]: User[] } = {};
+    const cityTotals: { [key: string]: number } = {};
+
+    // Count all friends in each city
+    friends.forEach((friend) => {
+      if (friend.location?.city) {
+        const cityKey = `${friend.location.city}-${friend.location.country}`;
+        cityTotals[cityKey] = (cityTotals[cityKey] || 0) + 1;
+      }
+    });
+
+    // Group friends that should be pooled
+    friends.forEach((friend) => {
+      const shouldPool =
+        friend.sharingLevel === 'city' ||
+        (shouldPoolRealtime && friend.sharingLevel === 'realtime');
+
+      if (shouldPool && friend.location?.city) {
+        const cityKey = `${friend.location.city}-${friend.location.country}`;
+        if (!cityGroups[cityKey]) {
+          cityGroups[cityKey] = [];
+        }
+        cityGroups[cityKey].push(friend);
+      }
+    });
+
+    return Object.entries(cityGroups)
+      .filter(([_, friendsList]) => friendsList.length > 0)
+      .map(([cityKey, friendsList]) => ({
+        id: cityKey,
+        location: friendsList[0].location!,
+        friends: friendsList,
+        count: cityTotals[cityKey],
+      }));
+  };
+
+  // Handle marker press
+  const handleMarkerPress = (friendsToShow: User[]) => {
+    setSelectedFriends(friendsToShow);
+    Animated.spring(slideAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 7,
+    }).start();
+  };
+
+  // Close friend detail modal
+  const closeFriendDetail = () => {
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setSelectedFriends([]);
+    });
+  };
+
+  const pooledMarkers = poolMarkers();
+  const pooledFriendIds = new Set(
+    pooledMarkers.flatMap((marker) => marker.friends.map((f) => f.id))
+  );
+
+  // Individual markers (real-time sharers when zoomed in)
+  const individualMarkers = friends.filter(
+    (friend) =>
+      !pooledFriendIds.has(friend.id) &&
+      friend.sharingLevel === 'realtime' &&
+      friend.location !== null &&
+      currentZoom <= MAP_SETTINGS.ZOOM_THRESHOLD
+  );
+
   return (
-    <View className="flex-1 justify-center items-center p-6 bg-white">
-      <Text className="text-2xl font-bold mb-8 text-gray-900">Dev Tools</Text>
+    <View style={styles.container}>
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        initialRegion={region}
+        customMapStyle={MAP_STYLE}
+        showsUserLocation
+        showsMyLocationButton={false}
+        onRegionChangeComplete={handleRegionChange}
+      >
+        {/* Pooled markers */}
+        {pooledMarkers.map((pooledMarker) => (
+          <Marker
+            key={pooledMarker.id}
+            coordinate={{
+              latitude: pooledMarker.location.latitude,
+              longitude: pooledMarker.location.longitude,
+            }}
+            onPress={() => handleMarkerPress(pooledMarker.friends)}
+          >
+            <View className="bg-blue-500 rounded-full px-3 py-2 items-center justify-center shadow-lg">
+              <Text className="text-white font-bold text-sm">{pooledMarker.count}</Text>
+            </View>
+          </Marker>
+        ))}
 
-      <Button
-        title="Clear Session & Sign Out"
-        onPress={handleClearSession}
-        variant="danger"
-        className="mb-4"
-      />
+        {/* Individual real-time markers when zoomed in */}
+        {individualMarkers.map((friend) => (
+          <Marker
+            key={friend.id}
+            coordinate={{
+              latitude: friend.location!.latitude,
+              longitude: friend.location!.longitude,
+            }}
+            onPress={() => handleMarkerPress([friend])}
+          >
+            <View className="bg-green-500 rounded-full w-10 h-10 items-center justify-center shadow-lg border-2 border-white">
+              <Ionicons name="person" size={20} color="white" />
+            </View>
+          </Marker>
+        ))}
+      </MapView>
 
-      <Text className="text-xs text-gray-500 mt-8 text-center">
-        This screen should be removed in production
-      </Text>
+      {/* Top Bar */}
+      <View className="absolute top-12 left-4 right-4 flex-row justify-between items-center bg-white/90 py-3 px-4 rounded-lg shadow-md">
+        <Text className="text-lg font-bold text-gray-900">Linda</Text>
+        <TouchableOpacity
+          className="p-2"
+          onPress={() => console.log('Settings pressed - TODO: implement settings')}
+        >
+          <Ionicons name="settings-outline" size={24} color="#111827" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Center on Location Button */}
+      <TouchableOpacity
+        className="absolute bottom-10 self-center w-14 h-14 rounded-full bg-blue-500 items-center justify-center shadow-lg"
+        onPress={centerOnUserLocation}
+      >
+        <Ionicons name="locate" size={24} color="white" />
+      </TouchableOpacity>
+
+      {/* Friend Detail Modal */}
+      <Modal
+        visible={selectedFriends.length > 0}
+        transparent
+        animationType="none"
+        onRequestClose={closeFriendDetail}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50"
+          activeOpacity={1}
+          onPress={closeFriendDetail}
+        >
+          <Animated.View
+            style={{ transform: [{ translateY: slideAnim }] }}
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl"
+          >
+            <TouchableOpacity activeOpacity={1}>
+              {/* Drag handle */}
+              <View className="items-center py-4">
+                <View className="w-12 h-1 bg-gray-300 rounded-full" />
+              </View>
+
+              {/* Content */}
+              <View className="px-6 pb-8">
+                <Text className="text-2xl font-bold text-gray-900 mb-4">
+                  {selectedFriends.length === 1
+                    ? selectedFriends[0].name
+                    : `${selectedFriends.length} friends`}
+                </Text>
+
+                {selectedFriends.length === 1 ? (
+                  // Single friend view
+                  <View>
+                    <View className="flex-row items-center mb-3">
+                      <Ionicons name="location-outline" size={20} color="#6B7280" />
+                      <Text className="ml-2 text-base text-gray-700">
+                        {selectedFriends[0].location?.city}, {selectedFriends[0].location?.country}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center mb-3">
+                      <Ionicons
+                        name={selectedFriends[0].sharingLevel === 'realtime' ? 'navigate-outline' : 'business-outline'}
+                        size={20}
+                        color="#6B7280"
+                      />
+                      <Text className="ml-2 text-base text-gray-700">
+                        {selectedFriends[0].sharingLevel === 'realtime' ? 'Real-time location' : 'City-level sharing'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  // Multiple friends view
+                  <View>
+                    {selectedFriends.map((friend) => (
+                      <View key={friend.id} className="mb-4 pb-4 border-b border-gray-200">
+                        <Text className="text-lg font-semibold text-gray-900 mb-2">
+                          {friend.name}
+                        </Text>
+                        <View className="flex-row items-center">
+                          <Ionicons name="location-outline" size={16} color="#6B7280" />
+                          <Text className="ml-2 text-sm text-gray-600">
+                            {friend.location?.city}, {friend.location?.country}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  className="mt-4 bg-blue-500 py-4 rounded-lg items-center"
+                  onPress={closeFriendDetail}
+                >
+                  <Text className="text-white font-semibold text-base">Close</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+});
