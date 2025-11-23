@@ -22,9 +22,15 @@ export function createAdminRoutes(db: Database.Database) {
       console.log(`🧪 [Admin] Script path: ${scriptPath}`);
 
       // Spawn child process to run simulation script
+      // Force IPv4 to avoid ECONNREFUSED ::1:3000 error
       const child = spawn('node', [scriptPath, userId], {
         stdio: 'inherit', // Inherit stdio to see logs in main process
         detached: false,
+        env: {
+          ...process.env,
+          API_URL: 'http://127.0.0.1:3000',
+          WS_URL: 'ws://127.0.0.1:3000/ws',
+        },
       });
 
       // Handle process errors
