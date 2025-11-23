@@ -25,7 +25,6 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
       console.log('🔄 [FriendsContext] Fetching friends from backend...');
       const friendsLocations = await locationService.getFriendsLocations(userId);
       console.log('✅ [FriendsContext] Fetched friends:', friendsLocations.length, 'friends');
-      console.log('📋 [FriendsContext] Friends data:', JSON.stringify(friendsLocations, null, 2));
       setFriends(friendsLocations as User[]);
     } catch (error) {
       console.error('❌ [FriendsContext] Failed to fetch friends:', error);
@@ -42,7 +41,6 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
     console.log('🎧 [FriendsContext] Setting up WebSocket listeners...');
 
     websocketService.onFriendLocation((friend) => {
-      console.log('📍 [FriendsContext] Friend location update received:', friend.userId, friend.name);
       setFriends((prev) => {
         const existingFriend = prev.find((f) => f.userId === friend.userId);
         if (!existingFriend) {
@@ -57,7 +55,6 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
 
     websocketService.onSync((friendsData) => {
       console.log('🔄 [FriendsContext] Sync received with', friendsData.length, 'friends');
-      console.log('📋 [FriendsContext] Sync data:', JSON.stringify(friendsData, null, 2));
       // Replace all friends with synced data from server
       setFriends(friendsData as User[]);
     });
