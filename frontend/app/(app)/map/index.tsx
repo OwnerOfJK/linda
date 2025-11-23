@@ -84,12 +84,10 @@ export default function MapScreen() {
       .filter(([_, friendsList]) => friendsList.length > 0)
       .map(([cityKey, friendsList]) => ({
         id: cityKey,
-        location: {
-          latitude: friendsList[0].latitude!,
-          longitude: friendsList[0].longitude!,
-          city: friendsList[0].city,
-          country: friendsList[0].country,
-        },
+        latitude: friendsList[0].latitude!,
+        longitude: friendsList[0].longitude!,
+        city: friendsList[0].city,
+        country: friendsList[0].country,
         friends: friendsList,
         count: cityTotals[cityKey],
       }));
@@ -149,8 +147,8 @@ export default function MapScreen() {
           <Marker
             key={pooledMarker.id}
             coordinate={{
-              latitude: pooledMarker.location.latitude,
-              longitude: pooledMarker.location.longitude,
+              latitude: pooledMarker.latitude,
+              longitude: pooledMarker.longitude,
             }}
             onPress={() => handleMarkerPress(pooledMarker.friends)}
           >
