@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { setStorageItemAsync, getStorageItemAsync } from '@/hooks/useStorageState';
 import { useSession } from '@/components/ctx';
 import { Button, LoadingSpinner } from '@/components/ui';
+import { authService } from '@/services';
 import * as Linking from 'expo-linking';
 
 
@@ -73,6 +74,7 @@ export default function SignIn() {
       }).build();
 
       setSelfApp(app);
+      // @ts-ignore - Type mismatch between @selfxyz packages
       setUniversalLink(getUniversalLink(app));
     } catch (error) {
       console.error("Failed to initialize Self app:", error);
@@ -104,6 +106,33 @@ export default function SignIn() {
     }
   };
 
+  const handleDevLogin = async () => {
+    if (!userId) {
+      Alert.alert('Error', 'User ID not initialized');
+      return;
+    }
+
+    try {
+      console.log('🔐 DevLogin: Registering user...');
+
+      // Try to register user (will fail if already exists, which is fine)
+      await authService.registerUser({
+        userId,
+        name: 'Test User',
+        nationality: 'US',
+        gender: 'other',
+      });
+
+      console.log('✅ User registered successfully');
+    } catch (error) {
+      // User might already exist, that's okay
+      console.log('ℹ️ User registration response:', error);
+    }
+
+    // Sign in regardless of registration result
+    signIn();
+  };
+
   // Show loading state while initializing
   if (!userId || !selfApp || !universalLink) {
     return <LoadingSpinner message="Initializing Self authentication..." />;
@@ -133,7 +162,7 @@ export default function SignIn() {
 
       <Button
         title="DevLogin"
-        onPress={signIn}
+        onPress={handleDevLogin}
         variant="danger"
         className="mt-5"
       />
