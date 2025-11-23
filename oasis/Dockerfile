@@ -28,6 +28,9 @@ RUN npm ci --only=production
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
 
+# Copy simulation script for admin endpoint
+COPY simulate-friends.js ./simulate-friends.js
+
 # Expose port
 EXPOSE 3000
 

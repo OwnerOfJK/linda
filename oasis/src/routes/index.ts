@@ -3,6 +3,7 @@ import { createUserRoutes } from './users.routes';
 import { createLocationRoutes } from './location.routes';
 import { createFriendsRoutes } from './friends.routes';
 import { createTestRoutes } from './test.routes';
+import { createAdminRoutes } from './admin.routes';
 import type { UserService } from '../services/user.service';
 import type { LocationService } from '../services/location.service';
 import type { FriendshipService } from '../services/friendship.service';
@@ -27,6 +28,9 @@ export function createRoutes(
 
   // Test routes
   router.use('/test', createTestRoutes(locationService, friendshipService, userService, wsManager));
+
+  // Admin routes
+  router.use('/admin', createAdminRoutes());
 
   return router;
 }
