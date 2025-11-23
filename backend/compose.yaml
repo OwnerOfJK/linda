@@ -3,7 +3,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    image: "docker.io/juanlarraya/backend:0.1.0"
+    image: "docker.io/juanlarraya/backend:0.2.0"
     platform: linux/amd64
     volumes:
       - my-volume:/root/.my-volume              # Persistent per-machine storage.
