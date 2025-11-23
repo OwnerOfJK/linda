@@ -196,8 +196,7 @@ export default function MapScreen() {
       </MapView>
 
       {/* Top Bar */}
-      <View className="absolute top-12 left-4 right-4 flex-row justify-between items-center bg-white/90 py-3 px-4 rounded-lg shadow-md">
-        <Text className="text-lg font-bold text-gray-900">Linda</Text>
+      <View className="absolute top-12 right-4 flex-row justify-between items-center bg-white/90 py-3 px-4 rounded-lg shadow-md">
         <TouchableOpacity
           className="p-2"
           onPress={() => router.push('/settings')}

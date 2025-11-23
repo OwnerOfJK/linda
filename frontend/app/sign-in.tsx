@@ -1,4 +1,4 @@
-import { Text, View, Alert } from 'react-native';
+import { Text, View, Alert, Image } from 'react-native';
 import { useEffect, useState } from 'react';
 import { getUniversalLink } from '@selfxyz/core';
 import { SelfAppBuilder, type SelfApp } from '@selfxyz/qrcode';
@@ -140,6 +140,11 @@ export default function SignIn() {
 
   return (
     <View className="flex-1 justify-center items-center p-6 bg-white">
+      <Image
+        source={require('../assets/images/linda_logo.png')}
+        className="w-24 h-24 mb-6"
+        resizeMode="contain"
+      />
       <Text className="text-3xl font-bold mb-2 text-gray-900">
         {process.env.EXPO_PUBLIC_SELF_APP_NAME || "Self Workshop"}
       </Text>
