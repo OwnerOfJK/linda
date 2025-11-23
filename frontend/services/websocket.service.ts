@@ -9,8 +9,6 @@ import { WS_URL } from '@/constants/config';
 import type {
   WSClientMessage,
   WSServerMessage,
-  WSFriendLocation,
-  WSSync,
   User,
 } from '@/types';
 
@@ -75,7 +73,6 @@ class WebSocketService {
         };
 
         this.ws.onerror = (error) => {
-          console.error('❌ WebSocket error:', error);
           this.status = 'disconnected';
           this.onErrorCallback?.('WebSocket connection error');
 
@@ -98,7 +95,6 @@ class WebSocketService {
           }
         };
       } catch (error) {
-        console.error('❌ Failed to create WebSocket:', error);
         this.status = 'disconnected';
         this.onErrorCallback?.('Failed to create WebSocket connection');
         reject(error);
@@ -216,7 +212,6 @@ class WebSocketService {
           break;
 
         case 'friend_location':
-          console.log('📍 Friend location update:', message.userId);
           this.onFriendLocationCallback?.(message);
           break;
 

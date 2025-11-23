@@ -57,7 +57,7 @@ export default function Index() {
 
   useEffect(() => {
     // Show success alert first
-    console.log("Successfully verified with Self");
+    console.log("Self Authentication successful")
 
     requestLocationPermission();
   }, [requestLocationPermission]);
@@ -149,12 +149,6 @@ export default function Index() {
           onPress={handleContinue}
           disabled={!selectedLevel}
           variant="primary"
-          className="mt-4"
-        />
-        <Button
-          title="Clear Session & Sign Out"
-          onPress={handleClearSession}
-          variant="danger"
           className="mt-4"
         />
       </View>

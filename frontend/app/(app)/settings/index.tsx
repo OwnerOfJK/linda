@@ -383,18 +383,74 @@ function FriendsTab() {
     }
   };
 
+  const handleStartSimulation = async () => {
+    if (!userId) {
+      Alert.alert('Error', 'Not logged in');
+      return;
+    }
+
+    Alert.alert(
+      'Start Friend Simulation',
+      'This will clear any existing mock friends and create 30 new ones that update their locations every 5 seconds. Perfect for testing!',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Start',
+          onPress: async () => {
+            try {
+              // First, clear any existing mock friends
+              console.log('🧹 Clearing existing mock friends...');
+              await testService.clearMockFriends();
+              console.log('✅ Mock friends cleared');
+
+              // Then start the simulation
+              console.log('🧪 Starting friend simulation...');
+              const result = await testService.startFriendSimulation(userId);
+              console.log('✅ Simulation started:', result);
+
+              // Refresh friends list after a short delay
+              setTimeout(async () => {
+                await refreshFriends();
+              }, 3000);
+
+              Alert.alert(
+                'Simulation Started!',
+                '30 mock friends are now moving around the world. Check the map to see them!',
+                [{ text: 'OK' }]
+              );
+            } catch (error) {
+              console.error('❌ Failed to start simulation:', error);
+              Alert.alert('Error', 'Failed to start friend simulation. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView className="flex-1 p-6">
-        {/* Add Friend Button */}
-        <Button
-          title="Add Friend"
-          onPress={() => setShowAddModal(true)}
-          variant="secondary"
-        />
+        {/* Action Buttons */}
+        <View className="flex-row gap-2 mb-4">
+          <View className="flex-1">
+            <Button
+              title="Add Friend"
+              onPress={() => setShowAddModal(true)}
+              variant="secondary"
+            />
+          </View>
+          <View className="flex-1">
+            <Button
+              title="🧪 Demo Mode"
+              onPress={handleStartSimulation}
+              variant="primary"
+            />
+          </View>
+        </View>
 
         {/* Friends List */}
-        <View className="mt-6">
+        <View className="mt-2">
           <Text className="text-lg font-bold text-gray-900 mb-3">
             Your Friends ({friends.length})
           </Text>
