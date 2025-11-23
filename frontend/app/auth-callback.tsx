@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Alert } from 'react-native';
 import { useSession } from '@/components/ctx';
 import { LoadingSpinner } from '@/components/ui';
-import { authService } from '@/services';
+import { authService, userService } from '@/services';
 import { getStorageItemAsync } from '@/hooks/useStorageState';
 
 export default function AuthCallback() {
@@ -17,7 +17,6 @@ export default function AuthCallback() {
         // Handle the callback from Self app
         console.log('Auth callback received with params:', params);
 
-        // TODO: Parse and verify Self Protocol response from params
         // For now, extract user data from params (adjust based on actual Self response format)
         const name = params.name as string;
         const nationality = params.nationality as string;
@@ -30,6 +29,13 @@ export default function AuthCallback() {
         }
 
         console.log('🔐 Registering user with Self Protocol data...');
+        
+        const userProfile = await userService.getProfile(userId);
+        if (userProfile) {
+          console.log("ℹ️ User already exists — skipping registration");
+          signIn();
+          return;
+        }
 
         // Register user in backend with Self Protocol data
         await authService.registerUser({
