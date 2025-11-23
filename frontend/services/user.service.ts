@@ -3,41 +3,33 @@
  */
 
 import { api } from './api';
-import type { SharingLevel } from '@/types';
+import type { PrivacyLevel, User } from '@/types';
 
 // Get user profile
-export const getProfile = async (userId: string) => {
+export const getProfile = async (userId: string): Promise<User> => {
   // TODO: Implement when backend is ready
   console.log('👤 getProfile:', userId);
   throw new Error('Backend not ready');
   // return api.get(`/users/${userId}`);
 };
 
-// Update user profile
-export const updateProfile = async (userId: string, data: any) => {
+// Update privacy level
+export const updatePrivacy = async (userId: string, privacy_level: PrivacyLevel) => {
   // TODO: Implement when backend is ready
-  console.log('✏️ updateProfile:', userId, data);
+  console.log('🔒 updatePrivacy:', userId, privacy_level);
   throw new Error('Backend not ready');
-  // return api.put(`/users/${userId}`, data);
+  // return api.put(`/users/${userId}/privacy`, { privacy_level });
 };
 
-// Update sharing level
-export const updateSharingLevel = async (userId: string, level: SharingLevel) => {
-  // TODO: Implement when backend is ready
-  console.log('🔒 updateSharingLevel:', userId, level);
-  throw new Error('Backend not ready');
-  // return api.put(`/users/${userId}/sharing-level`, { level });
-};
-
-// Get user's friends
-export const getFriends = async (userId: string) => {
+// Get user's friends (returns friends with basic info and city)
+export const getFriends = async (userId: string): Promise<Partial<User>[]> => {
   // TODO: Implement when backend is ready
   console.log('👥 getFriends:', userId);
   throw new Error('Backend not ready');
   // return api.get(`/users/${userId}/friends`);
 };
 
-// Add friend
+// Add friend (creates bidirectional friendship)
 export const addFriend = async (userId: string, friendId: string) => {
   // TODO: Implement when backend is ready
   console.log('➕ addFriend:', userId, friendId);
@@ -45,7 +37,7 @@ export const addFriend = async (userId: string, friendId: string) => {
   // return api.post(`/users/${userId}/friends`, { friendId });
 };
 
-// Remove friend
+// Remove friend (deletes bidirectional friendship)
 export const removeFriend = async (userId: string, friendId: string) => {
   // TODO: Implement when backend is ready
   console.log('➖ removeFriend:', userId, friendId);

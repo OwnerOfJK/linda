@@ -1,35 +1,45 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import type { SharingLevel, LocationData, UserContextType } from '@/types';
+import type { PrivacyLevel, UserContextType } from '@/types';
+import { websocketService } from '@/services';
 
 // Re-export types for backward compatibility
-export type { SharingLevel, UserContextType };
+export type { PrivacyLevel, UserContextType };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [sharingLevel, setSharingLevel] = useState<SharingLevel | null>(null);
-  const [userLocation, setUserLocationState] = useState<LocationData | null>(null);
+  const [privacy_level, setPrivacyLevel] = useState<PrivacyLevel | null>(null);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
 
   const setUserLocation = (
-    latitude: number,
-    longitude: number,
-    city?: string,
-    country?: string
+    lat: number,
+    lon: number,
+    cityName?: string,
+    countryName?: string
   ) => {
-    setUserLocationState({
-      latitude,
-      longitude,
-      city,
-      country,
-    });
+    setLatitude(lat);
+    setLongitude(lon);
+    setCity(cityName || null);
+    setCountry(countryName || null);
+
+    // Send location update via WebSocket if connected
+    if (websocketService.isConnected()) {
+      websocketService.sendLocationUpdate(lat, lon, cityName, countryName);
+    }
   };
 
   return (
     <UserContext.Provider
       value={{
-        sharingLevel,
-        setSharingLevel,
-        userLocation,
+        privacy_level,
+        setPrivacyLevel,
+        latitude,
+        longitude,
+        city,
+        country,
         setUserLocation,
       }}
     >

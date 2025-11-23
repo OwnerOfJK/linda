@@ -1,30 +1,46 @@
 /**
  * User-related types
+ * Flat structure matching backend format
  */
 
-import type { LocationData } from './location.types';
+// Privacy level for location sharing
+export type PrivacyLevel = 'city' | 'realtime';
 
-// Sharing privacy level
-export type SharingLevel = 'city' | 'realtime';
-
-// User object (also used for friends)
+// User object (matches backend format - flat structure, snake_case)
 export interface User {
-  id: string;
-  userName?: string;
-  sharingLevel: SharingLevel | null;
-  location: LocationData | null;
-  lastUpdated?: Date;
+  userId: string;
+  name: string;
+  nationality?: string;
+  gender?: string;
+  privacy_level: PrivacyLevel;
+  latitude: number | null;
+  longitude: number | null;
+  city: string;
+  country: string;
+  timestamp?: string;
 }
 
 // User context interface
 export interface UserContextType {
-  sharingLevel: SharingLevel | null;
-  setSharingLevel: (level: SharingLevel) => void;
-  userLocation: LocationData | null;
+  privacy_level: PrivacyLevel | null;
+  setPrivacyLevel: (level: PrivacyLevel) => void;
+  latitude: number | null;
+  longitude: number | null;
+  city: string | null;
+  country: string | null;
   setUserLocation: (
     latitude: number,
     longitude: number,
     city?: string,
     country?: string
   ) => void;
+}
+
+// Registration payload
+export interface RegisterUserPayload {
+  userId: string;
+  name: string;
+  nationality?: string;
+  gender?: string;
+  actionNullifier?: string;
 }

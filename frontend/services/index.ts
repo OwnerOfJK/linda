@@ -13,3 +13,6 @@ export * as userService from './user.service';
 
 // Location Service
 export * as locationService from './location.service';
+
+// WebSocket Service
+export { websocketService } from './websocket.service';

@@ -5,7 +5,7 @@ import { useUser } from '@/context/UserContext';
 import { useFriends } from '@/context/FriendsContext';
 import { useSession } from '@/components/ctx';
 import { Button } from '@/components/ui';
-import type { SharingLevel } from '@/types';
+import type { PrivacyLevel } from '@/types';
 
 type Tab = 'profile' | 'privacy' | 'friends';
 
@@ -102,8 +102,8 @@ function ProfileTab() {
 
 // Privacy Tab Component
 function PrivacyTab() {
-  const { sharingLevel, setSharingLevel } = useUser();
-  const [locationEnabled, setLocationEnabled] = useState(sharingLevel !== null);
+  const { privacyLevel, setPrivacyLevel } = useUser();
+  const [locationEnabled, setLocationEnabled] = useState(privacyLevel !== null);
 
   const handleToggleLocation = (value: boolean) => {
     if (!value) {
@@ -117,19 +117,19 @@ function PrivacyTab() {
             style: 'destructive',
             onPress: () => {
               setLocationEnabled(false);
-              setSharingLevel('city'); // Set to city but mark as disabled
+              setPrivacyLevel('city'); // Set to city but mark as disabled
             },
           },
         ]
       );
     } else {
       setLocationEnabled(true);
-      setSharingLevel('city');
+      setPrivacyLevel('city');
     }
   };
 
-  const handleSelectLevel = (level: SharingLevel) => {
-    setSharingLevel(level);
+  const handleSelectLevel = (level: PrivacyLevel) => {
+    setPrivacyLevel(level);
   };
 
   return (
@@ -165,7 +165,7 @@ function PrivacyTab() {
           <TouchableOpacity
             onPress={() => handleSelectLevel('city')}
             className={`bg-white rounded-lg p-4 mb-3 flex-row items-center ${
-              sharingLevel === 'city' ? 'border-2 border-blue-500' : 'border border-gray-200'
+              privacyLevel === 'city' ? 'border-2 border-blue-500' : 'border border-gray-200'
             }`}
           >
             <View className="mr-4">
@@ -179,7 +179,7 @@ function PrivacyTab() {
                 Friends see only the city you're in
               </Text>
             </View>
-            {sharingLevel === 'city' && (
+            {privacyLevel === 'city' && (
               <Ionicons name="checkmark-circle" size={24} color="#3b82f6" />
             )}
           </TouchableOpacity>
@@ -188,7 +188,7 @@ function PrivacyTab() {
           <TouchableOpacity
             onPress={() => handleSelectLevel('realtime')}
             className={`bg-white rounded-lg p-4 mb-3 flex-row items-center ${
-              sharingLevel === 'realtime' ? 'border-2 border-blue-500' : 'border border-gray-200'
+              privacyLevel === 'realtime' ? 'border-2 border-blue-500' : 'border border-gray-200'
             }`}
           >
             <View className="mr-4">
@@ -202,7 +202,7 @@ function PrivacyTab() {
                 Friends see your exact location
               </Text>
             </View>
-            {sharingLevel === 'realtime' && (
+            {privacyLevel === 'realtime' && (
               <Ionicons name="checkmark-circle" size={24} color="#3b82f6" />
             )}
           </TouchableOpacity>
@@ -273,21 +273,19 @@ function FriendsTab() {
 
           {friends.map((friend) => (
             <View
-              key={friend.id}
+              key={friend.userId}
               className="bg-white rounded-lg p-4 mb-3 flex-row items-center justify-between"
             >
               <View className="flex-1">
                 <Text className="text-base font-semibold text-gray-900 mb-1">
-                  {friend.userName || 'Unknown User'}
+                  {friend.name || 'Unknown User'}
                 </Text>
-                {friend.location && (
-                  <Text className="text-sm text-gray-600">
-                    {friend.location.city}, {friend.location.country}
-                  </Text>
-                )}
+                <Text className="text-sm text-gray-600">
+                  {friend.city}, {friend.country}
+                </Text>
               </View>
               <TouchableOpacity
-                onPress={() => handleRemoveFriend(friend.id, friend.userName || 'User')}
+                onPress={() => handleRemoveFriend(friend.userId, friend.name || 'User')}
                 className="p-2"
               >
                 <Ionicons name="trash-outline" size={20} color="#ef4444" />
