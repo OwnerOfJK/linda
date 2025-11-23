@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { PrivacyLevel, UserContextType } from '@/types';
 import { websocketService } from '@/services';
+import { getStorageItemAsync } from '@/hooks/useStorageState';
 
 // Re-export types for backward compatibility
 export type { PrivacyLevel, UserContextType };
@@ -13,6 +14,45 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [city, setCity] = useState<string | null>(null);
   const [country, setCountry] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Load userId from storage and initialize WebSocket connection
+  useEffect(() => {
+    async function initializeWebSocket() {
+      try {
+        const storedUserId = await getStorageItemAsync('userId');
+        if (storedUserId) {
+          setUserId(storedUserId);
+
+          // Connect WebSocket
+          await websocketService.connect(storedUserId);
+          console.log('✅ WebSocket initialized for user:', storedUserId);
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize WebSocket:', error);
+      }
+    }
+
+    initializeWebSocket();
+
+    // Setup WebSocket event listeners
+    websocketService.onConnected((connectedUserId) => {
+      console.log('🔗 WebSocket connected:', connectedUserId);
+    });
+
+    websocketService.onDisconnected(() => {
+      console.log('🔌 WebSocket disconnected');
+    });
+
+    websocketService.onError((error) => {
+      console.error('❌ WebSocket error:', error);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      websocketService.disconnect();
+    };
+  }, []);
 
   const setUserLocation = (
     lat: number,
@@ -34,6 +74,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   return (
     <UserContext.Provider
       value={{
+        userId,
         privacy_level,
         setPrivacyLevel,
         latitude,
