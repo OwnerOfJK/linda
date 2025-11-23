@@ -22,6 +22,7 @@ export interface User {
 
 // User context interface
 export interface UserContextType {
+  userId: string | null;
   privacy_level: PrivacyLevel | null;
   setPrivacyLevel: (level: PrivacyLevel) => void;
   latitude: number | null;
