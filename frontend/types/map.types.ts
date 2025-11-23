@@ -2,7 +2,7 @@
  * Map-related types
  */
 
-import type { LocationData, User } from './index';
+import type { User } from './index';
 
 // Map region for MapView
 export interface Region {
@@ -15,7 +15,10 @@ export interface Region {
 // Pooled marker for grouped friends
 export interface PooledMarker {
   id: string;
-  location: LocationData;
+  latitude: number;
+  longitude: number;
+  city: string;
+  country: string;
   friends: User[];
   count: number;
 }

@@ -5,18 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useUser } from '@/context/UserContext';
 import { Button, LoadingSpinner } from '@/components/ui';
-import type { SharingLevel } from '@/types';
+import type { PrivacyLevel } from '@/types';
 import { useSession } from '@/components/ctx';
 
 export default function Index() {
-  const [selectedLevel, setSelectedLevel] = useState<SharingLevel | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<PrivacyLevel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [locationInfo, setLocationInfo] = useState<{
-    city?: string;
-    country?: string;
-  }>({});
   const { signOut } = useSession();
-  const { setSharingLevel, setUserLocation } = useUser();
+  const { setPrivacyLevel, setUserLocation, city, country } = useUser();
   const router = useRouter();
   
   const requestLocationPermission = useCallback(async () => {
@@ -43,11 +39,6 @@ export default function Index() {
       });
 
       if (geocode) {
-        setLocationInfo({
-          city: geocode.city || geocode.region || 'Unknown City',
-          country: geocode.country || 'Unknown Country',
-        });
-
         setUserLocation(
           location.coords.latitude,
           location.coords.longitude,
@@ -77,7 +68,7 @@ export default function Index() {
 
   const handleContinue = () => {
     if (selectedLevel) {
-      setSharingLevel(selectedLevel);
+      setPrivacyLevel(selectedLevel);
       router.replace('/map');
     }
   };
@@ -108,11 +99,11 @@ export default function Index() {
           </Text>
         </View>
 
-        {locationInfo.city && (
+        {city && country && (
           <View className="flex-row items-center justify-center py-3 px-4 bg-white rounded-lg mb-8">
             <Ionicons name="location-outline" size={20} color="#6B7280" />
             <Text className="ml-2 text-base text-gray-900 font-medium">
-              {locationInfo.city}, {locationInfo.country}
+              {city}, {country}
             </Text>
           </View>
         )}

@@ -16,7 +16,7 @@ export default function MapScreen() {
   const router = useRouter();
 
   const { friends } = useFriends();
-  const { userLocation } = useUser();
+  const { latitude: userLatitude, longitude: userLongitude } = useUser();
 
   const [selectedFriends, setSelectedFriends] = useState<User[]>([]);
   const [region, setRegion] = useState<Region>({
@@ -29,10 +29,10 @@ export default function MapScreen() {
 
   // Center map on user's location
   const centerOnUserLocation = useCallback(async () => {
-    if (userLocation) {
+    if (userLatitude !== null && userLongitude !== null) {
       const newRegion = {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
+        latitude: userLatitude,
+        longitude: userLongitude,
         latitudeDelta: 10,
         longitudeDelta: 10,
       };
@@ -40,7 +40,7 @@ export default function MapScreen() {
       setCurrentZoom(10);
       mapRef.current?.animateToRegion(newRegion, MAP_SETTINGS.ANIMATION_DURATION);
     }
-  }, [userLocation]);
+  }, [userLatitude, userLongitude]);
 
   useEffect(() => {
     centerOnUserLocation();
@@ -59,8 +59,8 @@ export default function MapScreen() {
 
     // Count all friends in each city
     friends.forEach((friend) => {
-      if (friend.location?.city) {
-        const cityKey = `${friend.location.city}-${friend.location.country}`;
+      if (friend.city) {
+        const cityKey = `${friend.city}-${friend.country}`;
         cityTotals[cityKey] = (cityTotals[cityKey] || 0) + 1;
       }
     });
@@ -68,11 +68,11 @@ export default function MapScreen() {
     // Group friends that should be pooled
     friends.forEach((friend) => {
       const shouldPool =
-        friend.sharingLevel === 'city' ||
-        (shouldPoolRealtime && friend.sharingLevel === 'realtime');
+        friend.privacy_level === 'city' ||
+        (shouldPoolRealtime && friend.privacy_level === 'realtime');
 
-      if (shouldPool && friend.location?.city) {
-        const cityKey = `${friend.location.city}-${friend.location.country}`;
+      if (shouldPool && friend.city) {
+        const cityKey = `${friend.city}-${friend.country}`;
         if (!cityGroups[cityKey]) {
           cityGroups[cityKey] = [];
         }
@@ -84,7 +84,10 @@ export default function MapScreen() {
       .filter(([_, friendsList]) => friendsList.length > 0)
       .map(([cityKey, friendsList]) => ({
         id: cityKey,
-        location: friendsList[0].location!,
+        latitude: friendsList[0].latitude!,
+        longitude: friendsList[0].longitude!,
+        city: friendsList[0].city,
+        country: friendsList[0].country,
         friends: friendsList,
         count: cityTotals[cityKey],
       }));
@@ -114,15 +117,16 @@ export default function MapScreen() {
 
   const pooledMarkers = poolMarkers();
   const pooledFriendIds = new Set(
-    pooledMarkers.flatMap((marker) => marker.friends.map((f) => f.id))
+    pooledMarkers.flatMap((marker) => marker.friends.map((f) => f.userId))
   );
 
   // Individual markers (real-time sharers when zoomed in)
   const individualMarkers = friends.filter(
     (friend) =>
-      !pooledFriendIds.has(friend.id) &&
-      friend.sharingLevel === 'realtime' &&
-      friend.location !== null &&
+      !pooledFriendIds.has(friend.userId) &&
+      friend.privacy_level === 'realtime' &&
+      friend.latitude !== null &&
+      friend.longitude !== null &&
       currentZoom <= MAP_SETTINGS.ZOOM_THRESHOLD
   );
 
@@ -143,8 +147,8 @@ export default function MapScreen() {
           <Marker
             key={pooledMarker.id}
             coordinate={{
-              latitude: pooledMarker.location.latitude,
-              longitude: pooledMarker.location.longitude,
+              latitude: pooledMarker.latitude,
+              longitude: pooledMarker.longitude,
             }}
             onPress={() => handleMarkerPress(pooledMarker.friends)}
           >
@@ -157,10 +161,10 @@ export default function MapScreen() {
         {/* Individual real-time markers when zoomed in */}
         {individualMarkers.map((friend) => (
           <Marker
-            key={friend.id}
+            key={friend.userId}
             coordinate={{
-              latitude: friend.location!.latitude,
-              longitude: friend.location!.longitude,
+              latitude: friend.latitude!,
+              longitude: friend.longitude!,
             }}
             onPress={() => handleMarkerPress([friend])}
           >
@@ -216,7 +220,7 @@ export default function MapScreen() {
               <View className="px-6 pb-8">
                 <Text className="text-2xl font-bold text-gray-900 mb-4">
                   {selectedFriends.length === 1
-                    ? selectedFriends[0].userName
+                    ? selectedFriends[0].name
                     : `${selectedFriends.length} friends`}
                 </Text>
 
@@ -226,17 +230,17 @@ export default function MapScreen() {
                     <View className="flex-row items-center mb-3">
                       <Ionicons name="location-outline" size={20} color="#6B7280" />
                       <Text className="ml-2 text-base text-gray-700">
-                        {selectedFriends[0].location?.city}, {selectedFriends[0].location?.country}
+                        {selectedFriends[0].city}, {selectedFriends[0].country}
                       </Text>
                     </View>
                     <View className="flex-row items-center mb-3">
                       <Ionicons
-                        name={selectedFriends[0].sharingLevel === 'realtime' ? 'navigate-outline' : 'business-outline'}
+                        name={selectedFriends[0].privacy_level === 'realtime' ? 'navigate-outline' : 'business-outline'}
                         size={20}
                         color="#6B7280"
                       />
                       <Text className="ml-2 text-base text-gray-700">
-                        {selectedFriends[0].sharingLevel === 'realtime' ? 'Real-time location' : 'City-level sharing'}
+                        {selectedFriends[0].privacy_level === 'realtime' ? 'Real-time location' : 'City-level sharing'}
                       </Text>
                     </View>
                   </View>
@@ -244,14 +248,14 @@ export default function MapScreen() {
                   // Multiple friends view
                   <View>
                     {selectedFriends.map((friend) => (
-                      <View key={friend.id} className="mb-4 pb-4 border-b border-gray-200">
+                      <View key={friend.userId} className="mb-4 pb-4 border-b border-gray-200">
                         <Text className="text-lg font-semibold text-gray-900 mb-2">
-                          {friend.userName}
+                          {friend.name}
                         </Text>
                         <View className="flex-row items-center">
                           <Ionicons name="location-outline" size={16} color="#6B7280" />
                           <Text className="ml-2 text-sm text-gray-600">
-                            {friend.location?.city}, {friend.location?.country}
+                            {friend.city}, {friend.country}
                           </Text>
                         </View>
                       </View>

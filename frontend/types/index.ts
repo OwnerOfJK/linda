@@ -3,13 +3,24 @@
  */
 
 // User types
-export type { SharingLevel, User, UserContextType } from './user.types';
+export type {
+  PrivacyLevel,
+  User,
+  UserContextType,
+  RegisterUserPayload,
+} from './user.types';
 
 // Location types
 export type {
-  LocationData,
   LocationPermissionStatus,
-  LocationUpdate,
+  WSLocationUpdate,
+  WSFriendLocation,
+  WSSync,
+  WSConnected,
+  WSPing,
+  WSPong,
+  WSClientMessage,
+  WSServerMessage,
 } from './location.types';
 
 // Map types

@@ -1,0 +1,15 @@
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: "linda-rofl-backend:latest"
+    platform: linux/amd64
+    volumes:
+      - my-volume:/root/.my-volume              # Persistent SQLite storage
+      - /run/rofl-appd.sock:/run/rofl-appd.sock # appd REST API (for production ROFL)
+    ports:
+      - "3000:3000"
+
+volumes:
+  my-volume:
