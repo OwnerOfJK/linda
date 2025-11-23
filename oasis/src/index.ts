@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // Setup routes
-app.use('/', createRoutes(userService, locationService, friendshipService, wsManager));
+app.use('/', createRoutes(userService, locationService, friendshipService, wsManager, db));
 
 // Start server
 server.listen(PORT, '0.0.0.0', () => {

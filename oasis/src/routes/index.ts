@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import Database from 'better-sqlite3';
 import { createUserRoutes } from './users.routes';
 import { createLocationRoutes } from './location.routes';
 import { createFriendsRoutes } from './friends.routes';
@@ -13,7 +14,8 @@ export function createRoutes(
   userService: UserService,
   locationService: LocationService,
   friendshipService: FriendshipService,
-  wsManager: WebSocketConnectionManager
+  wsManager: WebSocketConnectionManager,
+  db: Database.Database
 ) {
   const router = Router();
 
@@ -30,7 +32,7 @@ export function createRoutes(
   router.use('/test', createTestRoutes(locationService, friendshipService, userService, wsManager));
 
   // Admin routes
-  router.use('/admin', createAdminRoutes());
+  router.use('/admin', createAdminRoutes(db));
 
   return router;
 }

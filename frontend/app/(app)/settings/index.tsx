@@ -391,13 +391,19 @@ function FriendsTab() {
 
     Alert.alert(
       'Start Friend Simulation',
-      'This will create 30 mock friends that update their locations every 5 seconds. Perfect for testing!',
+      'This will clear any existing mock friends and create 30 new ones that update their locations every 5 seconds. Perfect for testing!',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Start',
           onPress: async () => {
             try {
+              // First, clear any existing mock friends
+              console.log('🧹 Clearing existing mock friends...');
+              await testService.clearMockFriends();
+              console.log('✅ Mock friends cleared');
+
+              // Then start the simulation
               console.log('🧪 Starting friend simulation...');
               const result = await testService.startFriendSimulation(userId);
               console.log('✅ Simulation started:', result);
@@ -405,7 +411,7 @@ function FriendsTab() {
               // Refresh friends list after a short delay
               setTimeout(async () => {
                 await refreshFriends();
-              }, 2000);
+              }, 3000);
 
               Alert.alert(
                 'Simulation Started!',
