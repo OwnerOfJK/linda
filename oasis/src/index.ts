@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // Types
-type PrivacyLevel = 'city' | 'realtime';
+type PrivacyLevel = 'none' | 'city' | 'realtime';
 
 interface User {
   userId: string;
@@ -111,6 +111,46 @@ function initDatabase(): Database.Database {
 // Initialize database connection
 const db = initDatabase();
 
+// Helper: Get approximate city center coordinates
+// This is a simple lookup for common cities - can be expanded
+const CITY_CENTERS: Record<string, { lat: number; lon: number }> = {
+  // North America
+  'New York-USA': { lat: 40.7128, lon: -74.0060 },
+  'Los Angeles-USA': { lat: 34.0522, lon: -118.2437 },
+  'Chicago-USA': { lat: 41.8781, lon: -87.6298 },
+  'San Francisco-USA': { lat: 37.7749, lon: -122.4194 },
+  'Toronto-Canada': { lat: 43.6532, lon: -79.3832 },
+
+  // Europe
+  'London-UK': { lat: 51.5074, lon: -0.1278 },
+  'Paris-France': { lat: 48.8566, lon: 2.3522 },
+  'Berlin-Germany': { lat: 52.5200, lon: 13.4050 },
+  'Madrid-Spain': { lat: 40.4168, lon: -3.7038 },
+  'Rome-Italy': { lat: 41.9028, lon: 12.4964 },
+
+  // Asia
+  'Tokyo-Japan': { lat: 35.6762, lon: 139.6503 },
+  'Beijing-China': { lat: 39.9042, lon: 116.4074 },
+  'Singapore-Singapore': { lat: 1.3521, lon: 103.8198 },
+  'Mumbai-India': { lat: 19.0760, lon: 72.8777 },
+  'Seoul-South Korea': { lat: 37.5665, lon: 126.9780 },
+
+  // South America
+  'Buenos Aires-Argentina': { lat: -34.6037, lon: -58.3816 },
+  'São Paulo-Brazil': { lat: -23.5505, lon: -46.6333 },
+
+  // Oceania
+  'Sydney-Australia': { lat: -33.8688, lon: 151.2093 },
+  'Melbourne-Australia': { lat: -37.8136, lon: 144.9631 },
+};
+
+function getCityCoordinates(city: string | null, country: string | null): { lat: number; lon: number } | null {
+  if (!city || !country) return null;
+
+  const cityKey = `${city}-${country}`;
+  return CITY_CENTERS[cityKey] || null;
+}
+
 // Helper: Get friends' locations with privacy enforcement
 function getFriendsLocationsWithPrivacy(userId: string) {
   const stmt = db.prepare(`
@@ -131,32 +171,93 @@ function getFriendsLocationsWithPrivacy(userId: string) {
 
   const friends = stmt.all(userId) as any[];
 
-  return friends.map((friend) => ({
-    userId: friend.userId,
-    name: friend.name,
-    privacy_level: friend.privacy_level,
-    // Apply privacy rules
-    latitude: friend.privacy_level === 'realtime' ? friend.latitude : null,
-    longitude: friend.privacy_level === 'realtime' ? friend.longitude : null,
-    city: friend.city || 'Unknown',
-    country: friend.country || 'Unknown',
-    timestamp: friend.timestamp || new Date().toISOString(),
-  }));
+  return friends
+    .filter((friend) => friend.privacy_level !== 'none') // Exclude friends not sharing location
+    .map((friend) => {
+      let latitude = null;
+      let longitude = null;
+
+      if (friend.privacy_level === 'realtime') {
+        // Real-time: send exact coordinates
+        latitude = friend.latitude;
+        longitude = friend.longitude;
+      } else if (friend.privacy_level === 'city') {
+        // City-level: send approximate city center coordinates
+        const cityCoords = getCityCoordinates(friend.city, friend.country);
+        if (cityCoords) {
+          latitude = cityCoords.lat;
+          longitude = cityCoords.lon;
+        }
+      }
+
+      return {
+        userId: friend.userId,
+        name: friend.name,
+        privacy_level: friend.privacy_level,
+        latitude,
+        longitude,
+        city: friend.city || 'Unknown',
+        country: friend.country || 'Unknown',
+        timestamp: friend.timestamp || new Date().toISOString(),
+      };
+    });
 }
 
 // Helper: Broadcast location update to user's friends
 function broadcastLocationToFriends(userId: string) {
+  console.log(`📤 [Broadcast] Starting broadcast for ${userId}`);
+
   // Get user info and location
   const user = db.prepare('SELECT * FROM users WHERE userId = ?').get(userId) as User | undefined;
-  if (!user) return;
+  if (!user) {
+    console.warn(`⚠️ [Broadcast] User ${userId} not found in database`);
+    return;
+  }
+
+  // Don't broadcast if user has disabled location sharing
+  if (user.privacy_level === 'none') {
+    console.log(`🚫 [Broadcast] User ${userId} has location sharing disabled, not broadcasting`);
+    return;
+  }
 
   const location = db.prepare('SELECT * FROM locations WHERE userId = ?').get(userId) as Location | undefined;
-  if (!location) return;
+  if (!location) {
+    console.warn(`⚠️ [Broadcast] No location found for ${userId}`);
+    return;
+  }
 
   // Find all friends of this user
   const friends = db
     .prepare('SELECT friendId FROM friendships WHERE userId = ?')
     .all(userId) as { friendId: string }[];
+
+  console.log(`📤 [Broadcast] User ${userId} has ${friends.length} friends`);
+
+  if (friends.length === 0) {
+    console.log(`ℹ️ [Broadcast] No friends to broadcast to`);
+    return;
+  }
+
+  // Determine coordinates based on privacy level
+  let latitude = null;
+  let longitude = null;
+
+  if (user.privacy_level === 'realtime') {
+    // Real-time: send exact coordinates
+    latitude = location.latitude;
+    longitude = location.longitude;
+    console.log(`📍 [Broadcast] Privacy level: realtime - sending exact coordinates`);
+  } else if (user.privacy_level === 'city') {
+    // City-level: send approximate city center coordinates
+    const cityCoords = getCityCoordinates(location.city, location.country);
+    if (cityCoords) {
+      latitude = cityCoords.lat;
+      longitude = cityCoords.lon;
+      console.log(`📍 [Broadcast] Privacy level: city - sending city center coordinates`);
+    } else {
+      console.warn(`⚠️ [Broadcast] City coordinates not found for ${location.city}, ${location.country}`);
+    }
+  }
 
   // Create location update message with privacy enforcement
   const message = {
@@ -164,21 +265,32 @@ function broadcastLocationToFriends(userId: string) {
     userId: user.userId,
     name: user.name,
     privacy_level: user.privacy_level,
-    latitude: user.privacy_level === 'realtime' ? location.latitude : null,
-    longitude: user.privacy_level === 'realtime' ? location.longitude : null,
+    latitude,
+    longitude,
     city: location.city || 'Unknown',
     country: location.country || 'Unknown',
     timestamp: location.updated_at,
   };
 
+  console.log(`📤 [Broadcast] Message to send:`, JSON.stringify(message).substring(0, 150));
+
   // Send to each friend's websocket connection
+  let sentCount = 0;
+  let notConnectedCount = 0;
+
   friends.forEach(({ friendId }) => {
     const ws = wsConnections.get(friendId);
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
-      console.log(`📤 Sent location update to friend ${friendId}`);
+      sentCount++;
+      console.log(`✅ [Broadcast] Sent location update to friend ${friendId} (privacy: ${user.privacy_level})`);
+    } else {
+      notConnectedCount++;
+      console.log(`⚠️ [Broadcast] Friend ${friendId} is not connected via WebSocket`);
     }
   });
+
+  console.log(`📤 [Broadcast] Summary - Sent to ${sentCount} friends, ${notConnectedCount} not connected`);
 }
 
 // Routes
@@ -274,8 +386,8 @@ app.put('/users/:userId/privacy', (req: Request, res: Response) => {
     const { userId } = req.params;
     const { privacy_level } = req.body;
 
-    if (!privacy_level || !['city', 'realtime'].includes(privacy_level)) {
-      return res.status(400).json({ error: 'Invalid privacy_level. Must be "city" or "realtime"' });
+    if (!privacy_level || !['none', 'city', 'realtime'].includes(privacy_level)) {
+      return res.status(400).json({ error: 'Invalid privacy_level. Must be "none", "city", or "realtime"' });
     }
 
     const user = db.prepare('SELECT userId FROM users WHERE userId = ?').get(userId);
@@ -288,6 +400,33 @@ app.put('/users/:userId/privacy', (req: Request, res: Response) => {
       SET privacy_level = ?, updated_at = datetime('now')
       WHERE userId = ?
     `).run(privacy_level, userId);
+
+    // If privacy is set to 'none', notify friends to remove marker
+    if (privacy_level === 'none') {
+      const friends = db
+        .prepare('SELECT friendId FROM friendships WHERE userId = ?')
+        .all(userId) as { friendId: string }[];
+
+      const removeMessage = {
+        type: 'friend_location',
+        userId: userId,
+        name: (user as any).name || 'Unknown',
+        privacy_level: 'none',
+        latitude: null,
+        longitude: null,
+        city: null,
+        country: null,
+        timestamp: new Date().toISOString(),
+      };
+
+      friends.forEach(({ friendId }) => {
+        const ws = wsConnections.get(friendId);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(removeMessage));
+          console.log(`📤 Sent privacy update (none) to friend ${friendId}`);
+        }
+      });
+    }
 
     res.json({ success: true, privacy_level });
   } catch (error) {
@@ -515,14 +654,26 @@ wss.on('connection', (ws: WebSocket, req: http.IncomingMessage) => {
   // Handle incoming messages
   ws.on('message', (data: Buffer) => {
     try {
-      const message = JSON.parse(data.toString());
+      const rawMessage = data.toString();
+      console.log(`📥 [WebSocket] Received message from ${userId}:`, rawMessage.substring(0, 150));
+
+      const message = JSON.parse(rawMessage);
+      console.log(`📥 [WebSocket] Parsed message type:`, message.type);
 
       switch (message.type) {
         case 'location_update':
+          console.log(`📍 [Location Update] Received from ${userId}:`, {
+            latitude: message.latitude,
+            longitude: message.longitude,
+            city: message.city,
+            country: message.country
+          });
+
           // Update location in database
           const { latitude, longitude, city, country } = message;
 
           if (latitude === undefined || longitude === undefined) {
+            console.warn(`⚠️ [Location Update] Invalid coordinates from ${userId}`);
             ws.send(JSON.stringify({ type: 'error', message: 'latitude and longitude required' }));
             return;
           }
@@ -539,9 +690,10 @@ wss.on('connection', (ws: WebSocket, req: http.IncomingMessage) => {
               updated_at = datetime('now')
           `).run(userId, latitude, longitude, city || null, country || null, latitude, longitude, city || null, country || null);
 
-          console.log(`📍 Location updated for ${userId}`);
+          console.log(`✅ [Location Update] Database updated for ${userId}`);
 
           // Broadcast to friends
+          console.log(`📤 [Location Update] Broadcasting to friends of ${userId}...`);
           broadcastLocationToFriends(userId);
           break;
 
