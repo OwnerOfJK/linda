@@ -1,0 +1,137 @@
+# **OASIS ROFL – Full Deployment Tutorial (Improved)**
+
+## **1. Import your wallet**
+
+```
+oasis wallet import "YOUR_PUBLIC_KEY"
+```
+
+---
+
+## **2. Initialize the ROFL project**
+
+```
+oasis rofl init
+```
+
+---
+
+## **3. Create the app on the Sapphire testnet (only once)**
+
+```
+oasis rofl create --network testnet
+```
+
+---
+
+## **4. Prepare your application for deployment**
+
+### **4.1 Your application must be fully working locally**
+
+* Complete code
+* All environment variables ready
+* All backend routes tested
+
+### **4.2 Prepare a proper Dockerfile**
+
+Your Dockerfile must include **everything required** to run your app inside Docker.
+
+---
+
+## **5. Build your Docker image !!!(required: linux/amd64)!!!**
+
+```
+docker build --platform linux/amd64 -t juanlarraya/linda-rofl-backend:latest .
+```
+
+---
+
+## **6. Push your image to Docker Hub you will need a (Fully Qualified Domain Name (FQDN))**
+
+```
+docker push juanlarraya/linda-rofl-backend:latest
+```
+
+This is required because ROFL deploys using a **Fully Qualified Domain Name (FQDN)** of the image.
+
+---
+
+## **7. Update your docker-compose.yaml**
+
+Modify the service image field:
+
+```
+image: "docker.io/juanlarraya/linda-rofl-backend:latest"
+```
+
+**Important:**
+✔ Open the ports your app needs
+✔ Expose them with `ports:`
+
+Example:
+
+```yaml
+ports:
+  - "3000:3000"
+```
+
+---
+
+## **8. Follow the Oasis ROFL Quickstart**
+
+Reference:
+[https://docs.oasis.io/build/rofl/quickstart](https://docs.oasis.io/build/rofl/quickstart)
+
+---
+
+## **9. Build the ROFL bundle**
+
+### **On Linux**
+
+```
+oasis rofl build
+```
+
+### **On macOS / Windows (using container)**
+
+```
+docker run --platform linux/amd64 --volume .:/src -it ghcr.io/oasisprotocol/rofl-dev:main oasis rofl build
+```
+
+This command generates the **bundle** used to deploy to Sapphire.
+
+---
+
+## **10. Update the deployed app**
+
+```
+oasis rofl update
+```
+
+---
+
+## **11. Deploy the updated version**
+
+```
+oasis rofl deploy
+```
+
+---
+
+## **12. If your app does NOT start**
+
+Use machine logs:
+
+```
+oasis rofl machine logs
+```
+
+Look for:
+
+* Container startup errors
+* Port binding issues
+* Invalid configuration
+* Error codes from ROFL
+
+
+  
