@@ -57,11 +57,7 @@ export default function Index() {
 
   useEffect(() => {
     // Show success alert first
-    Alert.alert(
-      'Authentication Successful',
-      'You are now authenticated with Self Protocol!',
-      [{ text: 'Continue' }]
-    );
+    console.log("Successfully verified with Self");
 
     requestLocationPermission();
   }, [requestLocationPermission]);
