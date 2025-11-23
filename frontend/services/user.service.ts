@@ -7,7 +7,6 @@ import type { PrivacyLevel, User } from '@/types';
 
 // Get user profile
 export const getProfile = async (userId: string): Promise<User> => {
-  // TODO: Implement when backend is ready
   console.log('👤 getProfile:', userId);
   return api.get(`/users/${userId}`);
 };

@@ -145,6 +145,12 @@ CREATE TABLE users (
 ### Local Development (without Docker)
 
 ```bash
+#downgrade node to 20
+nvm install 20
+nvm use 20
+```
+
+```bash
 # Install dependencies
 npm install
 

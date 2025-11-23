@@ -35,8 +35,7 @@ export const api = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      console.error(`❌ API POST Error:`, endpoint, response.status, errorData);
-      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      console.log(errorData);
     }
 
     const result = await response.json();
