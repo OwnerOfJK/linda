@@ -21,4 +21,5 @@ export interface PooledMarker {
   country: string;
   friends: User[];
   count: number;
+  hasValidCoords?: boolean; // Used for filtering, not rendered
 }

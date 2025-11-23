@@ -10,6 +10,8 @@ import type { User } from '@/types';
 
 // Get all friends' locations (respecting privacy levels)
 export const getFriendsLocations = async (userId: string): Promise<Partial<User>[]> => {
-  console.log('👥 getFriendsLocations:', userId);
-  return api.get(`/users/${userId}/friends/locations`);
+  console.log('👥 [LocationService] getFriendsLocations:', userId);
+  const result = await api.get(`/users/${userId}/friends/locations`);
+  console.log('✅ [LocationService] getFriendsLocations result:', result);
+  return result;
 };

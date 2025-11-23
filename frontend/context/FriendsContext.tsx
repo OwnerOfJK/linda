@@ -5,8 +5,6 @@ import { getStorageItemAsync } from '@/hooks/useStorageState';
 
 interface FriendsContextType {
   friends: User[];
-  addFriend: (friend: User) => void;
-  removeFriend: (friendId: string) => void;
   refreshFriends: () => Promise<void>;
 }
 
@@ -24,12 +22,13 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      console.log('🔄 Fetching friends from backend...');
+      console.log('🔄 [FriendsContext] Fetching friends from backend...');
       const friendsLocations = await locationService.getFriendsLocations(userId);
-      console.log('✅ Fetched friends:', friendsLocations);
+      console.log('✅ [FriendsContext] Fetched friends:', friendsLocations.length, 'friends');
+      console.log('📋 [FriendsContext] Friends data:', JSON.stringify(friendsLocations, null, 2));
       setFriends(friendsLocations as User[]);
     } catch (error) {
-      console.error('❌ Failed to fetch friends:', error);
+      console.error('❌ [FriendsContext] Failed to fetch friends:', error);
     }
   };
 
@@ -40,28 +39,34 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
 
   // Listen to WebSocket friend location updates - direct pass-through, no conversion
   useEffect(() => {
+    console.log('🎧 [FriendsContext] Setting up WebSocket listeners...');
+
     websocketService.onFriendLocation((friend) => {
-      setFriends((prev) =>
-        prev.map((f) => (f.userId === friend.userId ? { ...f, ...friend } : f))
-      );
+      console.log('📍 [FriendsContext] Friend location update received:', friend.userId, friend.name);
+      setFriends((prev) => {
+        const existingFriend = prev.find((f) => f.userId === friend.userId);
+        if (!existingFriend) {
+          console.log('⚠️ [FriendsContext] Friend not in list, adding:', friend.userId);
+          // Add friend if not in list
+          return [...prev, friend as User];
+        }
+        // Update existing friend
+        return prev.map((f) => (f.userId === friend.userId ? { ...f, ...friend } : f));
+      });
     });
 
     websocketService.onSync((friendsData) => {
+      console.log('🔄 [FriendsContext] Sync received with', friendsData.length, 'friends');
+      console.log('📋 [FriendsContext] Sync data:', JSON.stringify(friendsData, null, 2));
       // Replace all friends with synced data from server
       setFriends(friendsData as User[]);
     });
+
+    console.log('✅ [FriendsContext] WebSocket listeners registered');
   }, []);
 
-  const addFriend = (friend: User) => {
-    setFriends((prev) => [...prev, friend]);
-  };
-
-  const removeFriend = (friendId: string) => {
-    setFriends((prev) => prev.filter((f) => f.userId !== friendId));
-  };
-
   return (
-    <FriendsContext.Provider value={{ friends, addFriend, removeFriend, refreshFriends }}>
+    <FriendsContext.Provider value={{ friends, refreshFriends }}>
       {children}
     </FriendsContext.Provider>
   );

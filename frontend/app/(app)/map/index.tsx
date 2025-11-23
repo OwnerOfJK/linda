@@ -57,8 +57,11 @@ export default function MapScreen() {
     const cityGroups: { [key: string]: User[] } = {};
     const cityTotals: { [key: string]: number } = {};
 
+    // Filter out friends with no location sharing
+    const sharingFriends = friends.filter((friend) => friend.privacy_level !== 'none');
+
     // Count all friends in each city
-    friends.forEach((friend) => {
+    sharingFriends.forEach((friend) => {
       if (friend.city) {
         const cityKey = `${friend.city}-${friend.country}`;
         cityTotals[cityKey] = (cityTotals[cityKey] || 0) + 1;
@@ -66,7 +69,7 @@ export default function MapScreen() {
     });
 
     // Group friends that should be pooled
-    friends.forEach((friend) => {
+    sharingFriends.forEach((friend) => {
       const shouldPool =
         friend.privacy_level === 'city' ||
         (shouldPoolRealtime && friend.privacy_level === 'realtime');
@@ -82,15 +85,25 @@ export default function MapScreen() {
 
     return Object.entries(cityGroups)
       .filter(([_, friendsList]) => friendsList.length > 0)
-      .map(([cityKey, friendsList]) => ({
-        id: cityKey,
-        latitude: friendsList[0].latitude!,
-        longitude: friendsList[0].longitude!,
-        city: friendsList[0].city,
-        country: friendsList[0].country,
-        friends: friendsList,
-        count: cityTotals[cityKey],
-      }));
+      .map(([cityKey, friendsList]) => {
+        // Find first friend with valid coordinates
+        // Now city-level users also have coordinates (city center)
+        const friendWithCoords = friendsList.find(
+          (f) => f.latitude !== null && f.longitude !== null
+        );
+
+        return {
+          id: cityKey,
+          latitude: friendWithCoords?.latitude ?? 0,
+          longitude: friendWithCoords?.longitude ?? 0,
+          city: friendsList[0].city,
+          country: friendsList[0].country,
+          friends: friendsList,
+          count: cityTotals[cityKey],
+          hasValidCoords: friendWithCoords !== undefined,
+        };
+      })
+      .filter((marker) => marker.hasValidCoords); // Filter out markers without any coordinates
   };
 
   // Handle marker press
@@ -123,6 +136,7 @@ export default function MapScreen() {
   // Individual markers (real-time sharers when zoomed in)
   const individualMarkers = friends.filter(
     (friend) =>
+      friend.privacy_level !== 'none' && // Exclude friends not sharing location
       !pooledFriendIds.has(friend.userId) &&
       friend.privacy_level === 'realtime' &&
       friend.latitude !== null &&
@@ -143,20 +157,26 @@ export default function MapScreen() {
         onRegionChangeComplete={handleRegionChange}
       >
         {/* Pooled markers */}
-        {pooledMarkers.map((pooledMarker) => (
-          <Marker
-            key={pooledMarker.id}
-            coordinate={{
-              latitude: pooledMarker.latitude,
-              longitude: pooledMarker.longitude,
-            }}
-            onPress={() => handleMarkerPress(pooledMarker.friends)}
-          >
-            <View className="bg-blue-500 rounded-full px-3 py-2 items-center justify-center shadow-lg">
-              <Text className="text-white font-bold text-sm">{pooledMarker.count}</Text>
-            </View>
-          </Marker>
-        ))}
+        {pooledMarkers.map((pooledMarker) => {
+          // Check if this is a city-level only marker (all friends have city privacy)
+          const isCityOnly = pooledMarker.friends.every((f) => f.privacy_level === 'city');
+          const markerColor = isCityOnly ? 'bg-orange-500' : 'bg-blue-500';
+
+          return (
+            <Marker
+              key={pooledMarker.id}
+              coordinate={{
+                latitude: pooledMarker.latitude,
+                longitude: pooledMarker.longitude,
+              }}
+              onPress={() => handleMarkerPress(pooledMarker.friends)}
+            >
+              <View className={`${markerColor} rounded-full px-3 py-2 items-center justify-center shadow-lg`}>
+                <Text className="text-white font-bold text-sm">{pooledMarker.count}</Text>
+              </View>
+            </Marker>
+          );
+        })}
 
         {/* Individual real-time markers when zoomed in */}
         {individualMarkers.map((friend) => (

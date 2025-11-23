@@ -13,6 +13,13 @@ export const api = {
   get: async (endpoint: string) => {
     console.log(`🌐 API GET: ${API_URL}${endpoint}`);
     const response = await fetch(`${API_URL}${endpoint}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`❌ API GET Error:`, endpoint, response.status, errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const data = await response.json();
     console.log(`✅ API GET Response:`, endpoint, data);
     return data;
@@ -25,6 +32,13 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`❌ API POST Error:`, endpoint, response.status, errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const result = await response.json();
     console.log(`✅ API POST Response:`, endpoint, result);
     return result;
@@ -37,6 +51,13 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`❌ API PUT Error:`, endpoint, response.status, errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const result = await response.json();
     console.log(`✅ API PUT Response:`, endpoint, result);
     return result;
@@ -47,6 +68,13 @@ export const api = {
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'DELETE',
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`❌ API DELETE Error:`, endpoint, response.status, errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const data = await response.json();
     console.log(`✅ API DELETE Response:`, endpoint, data);
     return data;

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Switch, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useUser } from '@/context/UserContext';
 import { useFriends } from '@/context/FriendsContext';
 import { useSession } from '@/components/ctx';
@@ -58,6 +59,28 @@ export default function SettingsScreen() {
 // Profile Tab Component
 function ProfileTab() {
   const { signOut } = useSession();
+  const { userId } = useUser();
+  const [userName, setUserName] = useState<string>('Loading...');
+  const [userNationality, setUserNationality] = useState<string | null>(null);
+
+  // Fetch user profile from backend
+  useEffect(() => {
+    async function fetchUserProfile() {
+      if (!userId) return;
+
+      try {
+        const { userService } = await import('@/services');
+        const profile = await userService.getProfile(userId);
+        setUserName(profile.name || 'Unknown');
+        setUserNationality(profile.nationality || null);
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+        setUserName('Error loading name');
+      }
+    }
+
+    fetchUserProfile();
+  }, [userId]);
 
   const handleSignOut = () => {
     Alert.alert(
@@ -74,18 +97,48 @@ function ProfileTab() {
     );
   };
 
+  const handleCopyUserId = async () => {
+    if (userId) {
+      try {
+        await Clipboard.setStringAsync(userId);
+        Alert.alert('Copied!', 'User ID copied to clipboard');
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+        Alert.alert('Error', 'Failed to copy User ID');
+      }
+    }
+  };
+
   return (
     <ScrollView className="flex-1 bg-gray-50 p-6">
       <View className="bg-white rounded-lg p-6 mb-4">
+        <Text className="text-sm font-semibold text-gray-700 mb-2">User ID</Text>
+        <TouchableOpacity
+          onPress={handleCopyUserId}
+          className="bg-gray-100 rounded-lg p-4 mb-2 flex-row items-center justify-between"
+        >
+          <Text className="text-base text-gray-800 flex-1" numberOfLines={1}>
+            {userId || 'Not logged in'}
+          </Text>
+          <Ionicons name="copy-outline" size={20} color="#6B7280" />
+        </TouchableOpacity>
+        <Text className="text-xs text-gray-500 mb-4">
+          Share this ID with friends so they can add you
+        </Text>
+
         <Text className="text-sm font-semibold text-gray-700 mb-2">Name</Text>
         <View className="bg-gray-100 rounded-lg p-4 mb-4">
-          <Text className="text-base text-gray-800">John Doe</Text>
+          <Text className="text-base text-gray-800">{userName}</Text>
         </View>
 
-        <Text className="text-sm font-semibold text-gray-700 mb-2">Username</Text>
-        <View className="bg-gray-100 rounded-lg p-4 mb-4">
-          <Text className="text-base text-gray-800">@johndoe</Text>
-        </View>
+        {userNationality && (
+          <>
+            <Text className="text-sm font-semibold text-gray-700 mb-2">Nationality</Text>
+            <View className="bg-gray-100 rounded-lg p-4 mb-4">
+              <Text className="text-base text-gray-800">{userNationality}</Text>
+            </View>
+          </>
+        )}
 
         <Text className="text-xs text-gray-500 italic">
           Profile information is synced from Self Protocol
@@ -104,9 +157,11 @@ function ProfileTab() {
 // Privacy Tab Component
 function PrivacyTab() {
   const { privacy_level, setPrivacyLevel } = useUser();
-  const [locationEnabled, setLocationEnabled] = useState(privacy_level !== null);
+  const [locationEnabled, setLocationEnabled] = useState(
+    privacy_level !== null && privacy_level !== 'none'
+  );
 
-  const handleToggleLocation = (value: boolean) => {
+  const handleToggleLocation = async (value: boolean) => {
     if (!value) {
       Alert.alert(
         'Disable Location Sharing?',
@@ -116,21 +171,26 @@ function PrivacyTab() {
           {
             text: 'Disable',
             style: 'destructive',
-            onPress: () => {
+            onPress: async () => {
               setLocationEnabled(false);
-              setPrivacyLevel('city'); // Set to city but mark as disabled
+              await setPrivacyLevel('none'); // Disable location sharing completely
             },
           },
         ]
       );
     } else {
       setLocationEnabled(true);
-      setPrivacyLevel('city');
+      await setPrivacyLevel('city');
     }
   };
 
-  const handleSelectLevel = (level: PrivacyLevel) => {
-    setPrivacyLevel(level);
+  const handleSelectLevel = async (level: PrivacyLevel) => {
+    try {
+      await setPrivacyLevel(level);
+    } catch (error) {
+      console.error('Failed to update privacy level:', error);
+      Alert.alert('Error', 'Failed to update privacy level. Please try again.');
+    }
   };
 
   return (
@@ -228,16 +288,51 @@ function PrivacyTab() {
 
 // Friends Tab Component
 function FriendsTab() {
-  const { friends, addFriend, removeFriend } = useFriends();
+  const { friends, refreshFriends } = useFriends();
+  const { userId } = useUser();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [username, setUsername] = useState('');
+  const [friendUserId, setFriendUserId] = useState('');
 
-  const handleAddFriend = () => {
-    if (username.trim()) {
-      // Mock add friend - in real app would call API
-      Alert.alert('Friend Request Sent', `Request sent to @${username}`);
-      setUsername('');
+  const handleAddFriend = async () => {
+    if (!friendUserId.trim()) {
+      Alert.alert('Error', 'Please enter a User ID');
+      return;
+    }
+
+    if (!userId) {
+      Alert.alert('Error', 'Not logged in');
+      return;
+    }
+
+    try {
+      console.log('➕ Adding friend:', friendUserId);
+
+      // Call backend API to add friend (bidirectional)
+      const { userService } = await import('@/services');
+      await userService.addFriend(userId, friendUserId.trim());
+
+      console.log('✅ Friend added successfully');
+      Alert.alert('Success', `Friend added successfully!`);
+
+      // Refresh friends list from backend
+      await refreshFriends();
+
+      setFriendUserId('');
       setShowAddModal(false);
+    } catch (error: any) {
+      console.error('❌ Failed to add friend:', error);
+
+      // Parse error message
+      const errorMessage = error?.message || 'Failed to add friend';
+      if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+        Alert.alert('Error', `User not found. Please check the User ID.`);
+      } else if (errorMessage.includes('Cannot add yourself')) {
+        Alert.alert('Error', 'Cannot add yourself as a friend');
+      } else if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
+        Alert.alert('Error', 'This user is already your friend');
+      } else {
+        Alert.alert('Error', 'Failed to add friend. Please try again.');
+      }
     }
   };
 
@@ -250,7 +345,27 @@ function FriendsTab() {
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () => removeFriend(friendId),
+          onPress: async () => {
+            if (!userId) return;
+
+            try {
+              console.log('➖ Removing friend:', friendId);
+
+              // Call backend API to remove friend (bidirectional)
+              const { userService } = await import('@/services');
+              await userService.removeFriend(userId, friendId);
+
+              console.log('✅ Friend removed successfully');
+
+              // Refresh friends list from backend
+              await refreshFriends();
+
+              Alert.alert('Success', `${friendName} removed from friends`);
+            } catch (error) {
+              console.error('❌ Failed to remove friend:', error);
+              Alert.alert('Error', 'Failed to remove friend. Please try again.');
+            }
+          },
         },
       ]
     );
@@ -332,12 +447,15 @@ function FriendsTab() {
             </Text>
 
             <TextInput
-              value={username}
-              onChangeText={setUsername}
-              placeholder="Enter username"
+              value={friendUserId}
+              onChangeText={setFriendUserId}
+              placeholder="Enter friend's User ID"
               className="bg-gray-100 rounded-lg p-4 mb-4 text-base"
               autoCapitalize="none"
             />
+            <Text className="text-xs text-gray-500 mb-4 -mt-2">
+              Ask your friend for their User ID from Settings → Profile
+            </Text>
 
             <View className="flex-row gap-2">
               <View className="flex-1">

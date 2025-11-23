@@ -4,7 +4,7 @@
  */
 
 // Privacy level for location sharing
-export type PrivacyLevel = 'city' | 'realtime';
+export type PrivacyLevel = 'none' | 'city' | 'realtime';
 
 // User object (matches backend format - flat structure, snake_case)
 export interface User {
@@ -24,7 +24,7 @@ export interface User {
 export interface UserContextType {
   userId: string | null;
   privacy_level: PrivacyLevel | null;
-  setPrivacyLevel: (level: PrivacyLevel) => void;
+  setPrivacyLevel: (level: PrivacyLevel) => Promise<void>;
   latitude: number | null;
   longitude: number | null;
   city: string | null;

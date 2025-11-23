@@ -21,8 +21,9 @@ class WebSocketService {
   private userId: string | null = null;
   private status: ConnectionStatus = 'disconnected';
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = 100; // Increased from 5 to 100
   private reconnectDelay = 1000; // Start with 1 second
+  private maxReconnectDelay = 30000; // Cap at 30 seconds
 
   // Event listeners
   private onConnectedCallback: ((userId: string) => void) | null = null;
@@ -127,6 +128,7 @@ class WebSocketService {
     city?: string,
     country?: string
   ): void {
+    console.log('📤 [WebSocket] sendLocationUpdate called:', { latitude, longitude, city, country });
     const message: WSClientMessage = {
       type: 'location_update',
       latitude,
@@ -184,14 +186,17 @@ class WebSocketService {
    */
   private send(message: WSClientMessage): void {
     if (!this.ws || this.status !== 'connected') {
-      console.warn('⚠️ WebSocket not connected, cannot send message');
+      console.warn('⚠️ [WebSocket] Cannot send message - not connected. Status:', this.status);
       return;
     }
 
     try {
-      this.ws.send(JSON.stringify(message));
+      const messageStr = JSON.stringify(message);
+      console.log('📤 [WebSocket] Sending message to server:', message.type, messageStr.substring(0, 100));
+      this.ws.send(messageStr);
+      console.log('✅ [WebSocket] Message sent successfully');
     } catch (error) {
-      console.error('❌ Failed to send message:', error);
+      console.error('❌ [WebSocket] Failed to send message:', error);
       this.onErrorCallback?.('Failed to send message');
     }
   }
@@ -206,6 +211,7 @@ class WebSocketService {
       switch (message.type) {
         case 'connected':
           console.log('🔗 Connected to server:', message.userId);
+          this.reconnectAttempts = 0; // Reset reconnect counter on successful connection
           this.onConnectedCallback?.(message.userId);
           break;
 
@@ -236,7 +242,7 @@ class WebSocketService {
   }
 
   /**
-   * Attempt to reconnect with exponential backoff
+   * Attempt to reconnect with exponential backoff (capped at maxReconnectDelay)
    */
   private attemptReconnect(): void {
     if (!this.userId || this.reconnectAttempts >= this.maxReconnectAttempts) {
@@ -246,7 +252,8 @@ class WebSocketService {
     }
 
     this.reconnectAttempts++;
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+    const exponentialDelay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+    const delay = Math.min(exponentialDelay, this.maxReconnectDelay);
 
     console.log(
       `🔄 Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`
