@@ -3,7 +3,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    image: "linda-rofl-backend:latest"
+    image: "docker.io/ownerofjk/linda-rofl-backend:latest"
     platform: linux/amd64
     volumes:
       - my-volume:/root/.my-volume              # Persistent SQLite storage

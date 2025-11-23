@@ -21,6 +21,7 @@ deployments:
     network: testnet
     paratime: sapphire
     admin: oasis1qrlejv48rk6khn9pftejgxv9h0l5y0ywxuteeg0t
+    oci_repository: rofl.sh/452be5de-493a-4851-94d7-f037b81f483f:1763880518
     trust_root:
       height: 29461364
       hash: c6355e0dedfba23de655e1ab4e67e896b236f7d89104dc8ea98999a8acbd6b3f
@@ -30,8 +31,15 @@ deployments:
           tcb_validity_period: 30
           min_tcb_evaluation_data_number: 18
           tdx: {}
-      enclaves: []
+      enclaves:
+        - id: Mr99pMpp/7P9km4Cij92QonS+1yKNZs2DKISVzQY2usAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: YyAcbYzoMN+s2zRMAf10fSMTtr2++Db5kf4it+PPA9wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
       max_expiration: 3
+    machines:
+      default:
+        provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+        offer: playground_short
+        id: 000000000000046e
