@@ -160,6 +160,33 @@ function PrivacyTab() {
   const [locationEnabled, setLocationEnabled] = useState(
     privacy_level !== null && privacy_level !== 'none'
   );
+  const [notificationStatus, setNotificationStatus] = useState<'granted' | 'denied' | 'undetermined'>('undetermined');
+
+  // Check notification permissions on mount
+  useEffect(() => {
+    async function checkNotificationPermissions() {
+      const { notificationService } = await import('@/services');
+      const status = await notificationService.getPermissionStatus();
+      setNotificationStatus(status);
+    }
+    checkNotificationPermissions();
+  }, []);
+
+  const handleRequestNotifications = async () => {
+    const { notificationService } = await import('@/services');
+    const granted = await notificationService.requestPermissions();
+    if (granted) {
+      setNotificationStatus('granted');
+      Alert.alert('Success', 'Notifications enabled! You will be notified when friends are nearby.');
+    } else {
+      setNotificationStatus('denied');
+      Alert.alert(
+        'Permissions Denied',
+        'Please enable notifications in your device settings to receive proximity alerts.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   const handleToggleLocation = async (value: boolean) => {
     if (!value) {
@@ -213,6 +240,47 @@ function PrivacyTab() {
             thumbColor="#ffffff"
           />
         </View>
+      </View>
+
+      {/* Notification Permissions */}
+      <View className="bg-white rounded-lg p-4 mb-4">
+        <View className="flex-row items-center mb-2">
+          <Ionicons
+            name={notificationStatus === 'granted' ? 'notifications' : 'notifications-off'}
+            size={24}
+            color={notificationStatus === 'granted' ? '#10b981' : '#ef4444'}
+          />
+          <Text className="text-base font-semibold text-gray-900 ml-3">
+            Proximity Notifications
+          </Text>
+        </View>
+        <Text className="text-sm text-gray-600 mb-3">
+          Get notified when friends are nearby (within 100km)
+        </Text>
+
+        {notificationStatus === 'granted' ? (
+          <View className="bg-green-50 border border-green-200 rounded-lg p-3 flex-row items-center">
+            <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+            <Text className="text-sm text-green-700 ml-2 flex-1">
+              Notifications enabled
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={handleRequestNotifications}
+            className="bg-blue-500 rounded-lg p-3"
+          >
+            <Text className="text-white text-center font-semibold">
+              Enable Notifications
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {notificationStatus === 'denied' && (
+          <Text className="text-xs text-gray-500 mt-2">
+            Notifications are disabled. Please enable them in your device settings.
+          </Text>
+        )}
       </View>
 
       {/* Sharing Level */}
