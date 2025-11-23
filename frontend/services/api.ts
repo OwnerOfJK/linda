@@ -3,60 +3,52 @@
  * Handles platform-specific URLs for Docker containers
  */
 
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+import { API_URL, WS_URL } from '@/constants/config';
 
-// Get API base URL based on platform
-const getApiUrl = (): string => {
-  const PORT = process.env.EXPO_PUBLIC_API_PORT || '3000';
-
-  // Production override
-  if (process.env.EXPO_PUBLIC_API_URL) {
-    return process.env.EXPO_PUBLIC_API_URL;
-  }
-
-  // Development - platform specific for Docker
-  if (Platform.OS === 'android') return `http://10.0.2.2:${PORT}`;
-  if (Platform.OS === 'ios') return `http://localhost:${PORT}`;
-  if (Platform.OS === 'web') return `http://localhost:${PORT}`;
-
-  // Physical device - use Expo's host IP
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  const ip = debuggerHost ? debuggerHost.split(':')[0] : 'localhost';
-  return `http://${ip}:${PORT}`;
-};
-
-export const API_URL = getApiUrl();
+// Re-export for convenience
+export { API_URL, WS_URL };
 
 // Simple fetch wrapper
 export const api = {
   get: async (endpoint: string) => {
+    console.log(`🌐 API GET: ${API_URL}${endpoint}`);
     const response = await fetch(`${API_URL}${endpoint}`);
-    return response.json();
+    const data = await response.json();
+    console.log(`✅ API GET Response:`, endpoint, data);
+    return data;
   },
 
   post: async (endpoint: string, data?: any) => {
+    console.log(`🌐 API POST: ${API_URL}${endpoint}`, data);
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return response.json();
+    const result = await response.json();
+    console.log(`✅ API POST Response:`, endpoint, result);
+    return result;
   },
 
   put: async (endpoint: string, data?: any) => {
+    console.log(`🌐 API PUT: ${API_URL}${endpoint}`, data);
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return response.json();
+    const result = await response.json();
+    console.log(`✅ API PUT Response:`, endpoint, result);
+    return result;
   },
 
   delete: async (endpoint: string) => {
+    console.log(`🌐 API DELETE: ${API_URL}${endpoint}`);
     const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'DELETE',
     });
-    return response.json();
+    const data = await response.json();
+    console.log(`✅ API DELETE Response:`, endpoint, data);
+    return data;
   },
 };

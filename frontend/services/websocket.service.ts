@@ -5,7 +5,7 @@
  * Connection: wss://linda/ws?userId={userId}
  */
 
-import { API_URL } from './api';
+import { WS_URL } from '@/constants/config';
 import type {
   WSClientMessage,
   WSServerMessage,
@@ -27,7 +27,7 @@ class WebSocketService {
   // Event listeners
   private onConnectedCallback: ((userId: string) => void) | null = null;
   private onFriendLocationCallback: ((friend: Omit<User, 'nationality' | 'gender'>) => void) | null = null;
-  private onSyncCallback: ((friends: Array<Omit<User, 'nationality' | 'gender'>>) => void) | null = null;
+  private onSyncCallback: ((friends: Omit<User, 'nationality' | 'gender'>[]) => void) | null = null;
   private onDisconnectedCallback: (() => void) | null = null;
   private onErrorCallback: ((error: string) => void) | null = null;
 
@@ -45,38 +45,56 @@ class WebSocketService {
       this.status = 'connecting';
 
       // Convert HTTP URL to WebSocket URL
-      const wsUrl = API_URL.replace(/^http/, 'ws');
-      const url = `${wsUrl}/ws?userId=${encodeURIComponent(userId)}`;
+      const url = `${WS_URL}?userId=${userId}`;
 
       console.log('📡 Connecting to WebSocket:', url);
 
       try {
         this.ws = new WebSocket(url);
 
+        let resolved = false;
+
         this.ws.onopen = () => {
-          console.log('✅ WebSocket connected');
+          console.log('✅ WebSocket opened');
           this.status = 'connected';
           this.reconnectAttempts = 0;
-          resolve();
+
+          // Don't resolve until we get the first message (connected confirmation)
+          // This prevents the promise from resolving before the connection is stable
         };
 
         this.ws.onmessage = (event) => {
-          this.handleMessage(event.data);
+          const data = this.handleMessage(event.data);
+
+          // Resolve on first successful message (connected confirmation)
+          if (!resolved && data?.type === 'connected') {
+            resolved = true;
+            resolve();
+          }
         };
 
         this.ws.onerror = (error) => {
           console.error('❌ WebSocket error:', error);
           this.status = 'disconnected';
           this.onErrorCallback?.('WebSocket connection error');
-          reject(error);
+
+          // Only reject if we haven't resolved yet
+          if (!resolved) {
+            resolved = true;
+            reject(error);
+          }
         };
 
-        this.ws.onclose = () => {
-          console.log('🔌 WebSocket closed');
+        this.ws.onclose = (event) => {
+          console.log('🔌 WebSocket closed. Code:', event.code, 'Reason:', event.reason);
           this.status = 'disconnected';
           this.ws = null;
           this.onDisconnectedCallback?.();
-          this.attemptReconnect();
+
+          // Only attempt reconnect if we had successfully connected before
+          if (resolved) {
+            this.attemptReconnect();
+          }
         };
       } catch (error) {
         console.error('❌ Failed to create WebSocket:', error);
@@ -149,7 +167,7 @@ class WebSocketService {
     this.onFriendLocationCallback = callback;
   }
 
-  onSync(callback: (friends: Array<Omit<User, 'nationality' | 'gender'>>) => void): void {
+  onSync(callback: (friends: Omit<User, 'nationality' | 'gender'>[]) => void): void {
     this.onSyncCallback = callback;
   }
 
@@ -181,7 +199,7 @@ class WebSocketService {
   /**
    * Handle incoming message from server
    */
-  private handleMessage(data: string): void {
+  private handleMessage(data: string): WSServerMessage | null {
     try {
       const message: WSServerMessage = JSON.parse(data);
 
@@ -208,9 +226,12 @@ class WebSocketService {
         default:
           console.warn('⚠️ Unknown message type:', message);
       }
+
+      return message;
     } catch (error) {
       console.error('❌ Failed to parse message:', error);
       this.onErrorCallback?.('Failed to parse server message');
+      return null;
     }
   }
 
