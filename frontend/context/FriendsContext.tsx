@@ -138,7 +138,7 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
     friends.forEach((friend) => {
       checkProximityAndNotify(friend.userId, friend.name || 'A friend', friend.latitude, friend.longitude);
     });
-  }, [userLat, userLon]);
+  }, [userLat, userLon, friends]);
 
   return (
     <FriendsContext.Provider value={{ friends, refreshFriends }}>
